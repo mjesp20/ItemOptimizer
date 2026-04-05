@@ -433,13 +433,16 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
         <div class="file-drop-name" id="db-name" style="display:none"></div>
         <div class="file-drop-count" id="db-count"></div>
       </div>
-      <p class="note mt-12">Expected: <code style="color:var(--accent-bright)">{"items":[{"id":…,"name":…,"type":…,"stats":[…]}]}</code></p>
+      <p class="note mt-12">
+        Expected format:<br>
+        <code style="color:var(--accent-bright)">{"items":[{"id":…,"name":…,"type":…,"stats":[…]},…], "itemSets":[{"id":677,"name":"Felheart Attire","itemIds":[…],"bonuses":[{"piecesRequired":3,"spellId":52599},…]},…]}</code>
+      </p>
       <p class="note mt-12">
         <strong style="color:var(--text)">Set bonus auto-detection:</strong>
-        If items include a <code style="color:var(--accent-bright)">"set"</code> string field
-        (e.g. <code style="color:var(--accent-bright)">"set":"felheart_affli"</code>) matching the
-        <em>Set Tag</em> shown in Config → Set Bonuses, the optimizer will automatically apply bonuses
-        only to gear combinations that actually contain enough set pieces.
+        Set membership is read from the <code style="color:var(--accent-bright)">itemSets</code> array by matching
+        numeric set IDs (e.g. <code style="color:var(--accent-bright)">677</code> for Felheart Attire).
+        The optimizer counts how many equipped items from each set are in a gear combination and applies
+        the corresponding bonuses automatically — no per-item tags needed.
       </p>
     </div>
   </div>
@@ -588,13 +591,14 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
     <div class="card-title">Tier Set Bonuses</div>
     <p class="note mb-8">
       <strong style="color:var(--text)">How set bonuses work:</strong>
-      If your items.json includes a <code style="color:var(--accent-bright)">"set"</code> field on items
-      matching the <em>Set Tag</em> below, the optimizer automatically applies each bonus only to gear
-      combinations that actually contain enough pieces of that set. No manual selection needed in that case.<br><br>
-      <strong style="color:var(--text)">Force-override checkboxes:</strong> If your DB doesn't have set tags,
-      check a bonus here to apply it to <em>all</em> simulations unconditionally — useful if you've already
-      committed to wearing those pieces (e.g. lock them in Items tab) and just want the correct DPS projection.
-      Only always-active stat effects are modelled; proc-based bonuses are excluded.
+      The optimizer reads the <code style="color:var(--accent-bright)">itemSets</code> array from your items.json.
+      Each set entry has a numeric <code style="color:var(--accent-bright)">id</code> and an
+      <code style="color:var(--accent-bright)">itemIds</code> list. During optimization, the engine counts
+      how many items from each set are present in a gear combination and applies the matching bonus automatically.<br><br>
+      <strong style="color:var(--text)">Force-override checkboxes:</strong> If your DB has no
+      <code style="color:var(--accent-bright)">itemSets</code> data, or you want to force a bonus on regardless
+      of gear (e.g. you've already locked in those pieces), tick the checkbox here to apply it unconditionally
+      to all simulations. Only always-active stat effects are modelled; proc-based bonuses are excluded.
     </p>
     <div class="set-bonus-grid" id="set-bonus-grid">
       <!-- populated by JS -->
@@ -634,8 +638,10 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
 
 <!-- ═══ TIER SET BONUS DEFINITIONS ═══ -->
 <script>
-// Only always-active, non-proc stat effects.
-// setTag: items in items.json should have  "set": "<setTag>"  to enable auto-detection.
+// Maps our known set bonus effects to the numeric set IDs from itemSets in items.json.
+// setId: the numeric id from the itemSets array (e.g. 677 = Felheart Attire).
+//        Set to null for sets with no known DB entry — those can only be force-overridden.
+// pieces: piece count threshold at which the bonus activates (matches itemSets.bonuses[].piecesRequired).
 // effects map:
 //   bonusSP          — flat SP added to total SP
 //   drainMult        — multiplier on each Drain Soul tick
@@ -646,48 +652,48 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
 const TIER_SET_BONUSES = [
   {
     id: 'felheart_affli_3pc',
-    setTag: 'felheart_affli',
-    group: 'Felheart (Affliction Alt — ID 677)',
+    setId: 677,
+    group: 'Felheart Attire (ID 677)',
     pieces: 3,
     desc: 'Drain Soul damage +5%',
     effects: { drainMult: 1.05 }
   },
   {
     id: 'nemesis_normal_3pc',
-    setTag: 'nemesis_normal',
-    group: 'Nemesis (Normal — ID 212)',
+    setId: 212,
+    group: 'Nemesis Raiment (ID 212)',
     pieces: 3,
     desc: '+23 Spell Power to magical spells and effects',
     effects: { bonusSP: 23 }
   },
   {
     id: 'doomcaller_affli_3pc',
-    setTag: 'doomcaller_affli',
-    group: 'Doomcaller (Affliction Alt — ID 679)',
+    setId: 679,
+    group: 'Doomcaller\'s Attire (ID 679)',
     pieces: 3,
     desc: 'Curse of Agony damage +5%',
     effects: { coaMult: 1.05 }
   },
   {
     id: 'plagueheart_normal_4pc',
-    setTag: 'plagueheart_normal',
-    group: 'Plagueheart (Normal — ID 529)',
+    setId: 529,
+    group: 'Plagueheart Raiment (ID 529)',
     pieces: 4,
     desc: 'Corruption damage +12%',
     effects: { corruptionMult: 1.12 }
   },
   {
     id: 'plagueheart_affli_4pc',
-    setTag: 'plagueheart_affli',
-    group: 'Plagueheart (Affliction Alt — ID 680)',
+    setId: 680,
+    group: 'Plagueheart Garb (ID 680)',
     pieces: 4,
     desc: 'Curse of Agony deals +100% damage for the first 4 ticks',
     effects: { coaFirstTickMult: 2.0 }
   },
   {
     id: 'nathrezim_affli_3pc',
-    setTag: 'nathrezim_affli',
-    group: 'Nathrezim (Affliction Alt)',
+    setId: null,   // no known DB entry — force-override only
+    group: 'Nathrezim Garb (no DB entry)',
     pieces: 3,
     desc: 'Siphon Life health drained +25%',
     effects: { siphonMult: 1.25 }
@@ -733,29 +739,34 @@ function globalMult() {
 function coaMult() { return 1 + [0, 0.03, 0.06, 0.10][CFG.TALENTS.improved_coa]; }
 
 // ── SET BONUS HELPERS ──
+// CFG.ITEM_ID_TO_SET_IDS: plain object { itemId -> [setId, ...] }  (serialised Map from main thread)
+// CFG.SET_REQUIREMENTS:   TIER_SET_BONUSES array (with numeric setId)
+// CFG.MANUAL_SET_BONUSES: force-override bonuses from checkboxes
 
-// Compute which set bonuses actually apply given a list of assigned item combos.
-// Falls back to manual force-overrides if items have no set tags.
 function gearBonusesForAssigned(assigned) {
-  // Count pieces per set tag
-  const counts = {};
-  let anySetTags = false;
+  // Count pieces per numeric set ID across all equipped items
+  const counts = {};  // setId (number) -> piece count
+  let anySetData = false;
+
   for (const combo of assigned) {
     for (const item of combo) {
-      if (item.set) {
-        counts[item.set] = (counts[item.set] || 0) + 1;
-        anySetTags = true;
+      const setIds = CFG.ITEM_ID_TO_SET_IDS[item.id];
+      if (setIds && setIds.length) {
+        anySetData = true;
+        for (const sid of setIds) counts[sid] = (counts[sid] || 0) + 1;
       }
     }
   }
 
-  // Start from manual overrides (force-checked)
+  // Start from force-override bonuses (manual checkboxes)
   const active = Object.assign({}, CFG.MANUAL_SET_BONUSES);
 
-  if (anySetTags) {
-    // Auto-detect bonuses from gear, skip ones already merged via manual override
+  if (anySetData) {
+    // Auto-apply set bonuses where the piece count threshold is met.
+    // Skip requirements with setId === null (force-override only).
     for (const req of CFG.SET_REQUIREMENTS) {
-      if ((counts[req.setTag] || 0) >= req.pieces) {
+      if (req.setId == null) continue;
+      if ((counts[req.setId] || 0) >= req.pieces) {
         for (const [key, val] of Object.entries(req.effects)) {
           if (key === 'bonusSP') active[key] = (active[key] || 0) + val;
           else                   active[key] = (active[key] || 1) * val;
@@ -803,7 +814,6 @@ function pickAction(state) {
   return 'drain';
 }
 
-// setBonuses is now passed explicitly; falls back to CFG.MANUAL_SET_BONUSES for stat weights
 function simulate(duration, sp, haste, setBonuses) {
   if (sp    === undefined) sp    = CFG.BASE_SP;
   if (haste === undefined) haste = CFG.BASE_HASTE;
@@ -865,7 +875,6 @@ function simulate(duration, sp, haste, setBonuses) {
 }
 
 // ── PARETO PRUNE ── (3-dimensional: sp, haste, hit)
-// hit above cap is clamped — overcapping gives no dominance advantage
 function paretoPrune(states, hitCap) {
   if (!states.length) return [];
   const effH = h => Math.min(h, hitCap);
@@ -947,11 +956,11 @@ function findBestGearDP(bySlot) {
   for (const [sp, h, hit, asgn] of frontier) {
     if (hit < HIT_CAP - 1e-9) continue;
 
-    // FIX: compute set bonuses from the actual items selected, not a global flag
+    // Compute which set bonuses actually apply to this specific gear combination
     const setBonuses = gearBonusesForAssigned(asgn);
 
     const tsp = CFG.BASE_SP + sp, thaste = CFG.BASE_HASTE + h;
-    // Cache key includes set bonus state so different bonus combos are simulated separately
+    // Cache key includes serialised set bonus state so different bonus combos run separately
     const bonusKey = JSON.stringify(setBonuses);
     const key = `${tsp}|${thaste.toFixed(8)}|${bonusKey}`;
     if (!simCache.has(key)) simCache.set(key, simulate(duration, tsp, thaste, setBonuses));
@@ -962,7 +971,7 @@ function findBestGearDP(bySlot) {
     results.push({ dps, sp: tsp, haste: thaste, hit, breakdown, assigned: asgn, slotNames, activeBonuses: setBonuses });
   }
 
-  // FIX: primary sort DPS descending, secondary sort hit ascending (prefer less wasted hit)
+  // Primary sort: DPS descending. Secondary: hit ascending (prefer less wasted hit at equal DPS).
   results.sort((a, b) => {
     const dd = b.dps - a.dps;
     if (Math.abs(dd) > 0.001) return dd;
@@ -977,7 +986,6 @@ function findBestGearDP(bySlot) {
 }
 
 // ── STAT WEIGHTS ──
-// Uses manual set bonuses only (no gear context at stat-weight time)
 function computeStatWeights() {
   const sp = CFG.BASE_SP, h = CFG.BASE_HASTE, d = CFG.SIM_DURATION;
   const sb = CFG.MANUAL_SET_BONUSES;
@@ -1041,10 +1049,18 @@ const App = {
   lockedSlots: {},
   worker: null,
   running: false,
+  // Set membership data loaded from itemSets in items.json
+  itemSets: [],                      // raw itemSets array from JSON
+  itemIdToSetIds: new Map(),         // itemId (number) -> [setId (number), ...]
 };
 
 function getConfig() {
   const manualBonuses = getManualSetBonuses();
+
+  // Serialise the Map to a plain object so it can be postMessage'd to the worker
+  const itemIdToSetIds = {};
+  for (const [id, setIds] of App.itemIdToSetIds) itemIdToSetIds[id] = setIds;
+
   return {
     BASE_SP: +document.getElementById('cfg-BASE_SP').value || 0,
     BASE_HASTE: (+document.getElementById('cfg-BASE_HASTE_PCT').value || 6) / 100,
@@ -1067,10 +1083,12 @@ function getConfig() {
       shadow_vulnerability: document.getElementById('d-shadow_vulnerability').checked,
       curse_of_shadows:     document.getElementById('d-curse_of_shadows').checked,
     },
-    // Manual force-override bonuses (for stat weight calc & fallback when items have no set tags)
+    // Force-override bonuses (manual checkboxes in Config tab)
     MANUAL_SET_BONUSES: manualBonuses,
-    // Full definitions so the worker can auto-detect from item.set fields
+    // Full set bonus definitions (worker uses setId for auto-detection)
     SET_REQUIREMENTS: TIER_SET_BONUSES,
+    // Item → set membership lookup (built from itemSets during DB load)
+    ITEM_ID_TO_SET_IDS: itemIdToSetIds,
   };
 }
 
@@ -1083,28 +1101,56 @@ function iHaste(item, cfg) { return _stat(item, STAT_SPELL_HASTE) / (cfg ? cfg.H
 function iHit(item, cfg)   { return _stat(item, STAT_SPELL_HIT)   / (cfg ? cfg.SPELL_HIT_DIVISOR : 100); }
 function isTwoHanded(item) { return !!(item.twoHanded || item.hands === 2 || item.inventoryType === 17); }
 
+// Returns the set IDs this item belongs to (from itemSets lookup), or []
+function itemSetIds(item) { return App.itemIdToSetIds.get(item.id) || []; }
+
+// Returns a short human-readable set label for an item (e.g. "Felheart Attire")
+function itemSetLabel(item) {
+  const ids = itemSetIds(item);
+  if (!ids.length) return null;
+  const names = ids.map(sid => {
+    const set = App.itemSets.find(s => s.id === sid);
+    return set ? set.name : `set:${sid}`;
+  });
+  return names.join(', ');
+}
+
 function itemStatStr(item) {
   const cfg = getConfig();
   const parts = [];
-  const sp = iSP(item);      if (sp) parts.push(`SP+${sp}`);
-  const h  = iHaste(item, cfg); if (h)  parts.push(`Hst+${(h*100).toFixed(1)}%`);
-  const t  = iHit(item, cfg);   if (t)  parts.push(`Hit+${(t*100).toFixed(1)}%`);
-  if (item.set) parts.push(`[${item.set}]`);
+  const sp = iSP(item);          if (sp) parts.push(`SP+${sp}`);
+  const h  = iHaste(item, cfg);  if (h)  parts.push(`Hst+${(h*100).toFixed(1)}%`);
+  const t  = iHit(item, cfg);    if (t)  parts.push(`Hit+${(t*100).toFixed(1)}%`);
+  const setLabel = itemSetLabel(item);
+  if (setLabel) parts.push(`[${setLabel}]`);
   return parts.join(' ');
 }
 
+// ═══════════════════════════════════════════════════
+// DB LOADING
+// ═══════════════════════════════════════════════════
 function onDBLoaded(data, name) {
   if (!data.items || !Array.isArray(data.items)) return alert('Expected {"items":[...]} in DB file');
   App.itemsDB.clear();
   for (const item of data.items) App.itemsDB.set(item.id, item);
 
+  // Build itemId → setId[] lookup from the itemSets array
+  App.itemSets = data.itemSets || [];
+  App.itemIdToSetIds.clear();
+  for (const set of App.itemSets) {
+    for (const itemId of (set.itemIds || [])) {
+      if (!App.itemIdToSetIds.has(itemId)) App.itemIdToSetIds.set(itemId, []);
+      App.itemIdToSetIds.get(itemId).push(set.id);
+    }
+  }
+
   const bar = document.getElementById('db-status-bar');
   bar.classList.add('loaded');
 
-  // Count how many items have set tags
-  let setTagCount = 0;
-  for (const item of App.itemsDB.values()) if (item.set) setTagCount++;
-  const setNote = setTagCount > 0 ? ` · ${setTagCount} items have set tags` : ' · no set tags (manual set bonus mode)';
+  const setNote = App.itemSets.length > 0
+    ? ` · ${App.itemSets.length} item set${App.itemSets.length !== 1 ? 's' : ''} (${App.itemIdToSetIds.size} items with set membership)`
+    : ' · no itemSets found (manual set bonus mode only)';
+
   document.getElementById('db-status-text').textContent =
     `${name} — ${App.itemsDB.size.toLocaleString()} items loaded${setNote}`;
 
@@ -1113,7 +1159,7 @@ function onDBLoaded(data, name) {
   const nameEl = document.getElementById('db-name');
   if (nameEl) { nameEl.textContent = name; nameEl.style.display = 'block'; }
   const countEl = document.getElementById('db-count');
-  if (countEl) countEl.textContent = `${App.itemsDB.size.toLocaleString()} items loaded`;
+  if (countEl) countEl.textContent = `${App.itemsDB.size.toLocaleString()} items · ${App.itemSets.length} sets`;
 
   document.getElementById('search-input').disabled = false;
   updateAll();
@@ -1371,6 +1417,7 @@ function renderSummary() {
 
   let html = `<div style="color:var(--muted2);line-height:2">`;
   html += `DB: <span class="text-green">${App.itemsDB.size.toLocaleString()}</span> items &nbsp;|&nbsp; `;
+  html += `Sets: <span class="text-purple">${App.itemSets.length}</span> &nbsp;|&nbsp; `;
   html += `Owned: <span class="text-green">${App.ownedIds.size}</span> &nbsp;|&nbsp; `;
   html += `Wanted: <span class="text-gold">${App.wantedIds.size}</span> &nbsp;|&nbsp; `;
   html += `Locked slots: <span class="text-purple">${Object.keys(App.lockedSlots).length}</span><br>`;
@@ -1505,10 +1552,9 @@ function renderResults(results, cfg, statWeights) {
     const rank     = i + 1;
     const hitTotal = r.hit + hitFromTB;
     const hitOk    = hitTotal >= totalHitCap - 1e-9;
-    const hitOver  = r.hit > hitFromGearCap + 0.005; // more than 0.5% over cap from gear
+    const hitOver  = r.hit > hitFromGearCap + 0.005;
     const hitWasted = hitOver ? ((r.hit - hitFromGearCap) * 100).toFixed(1) : null;
 
-    // Determine hit display class
     let hitClass, hitSuffix;
     if (!hitOk) {
       hitClass = 'hit-bad'; hitSuffix = ' ✗ under cap';
@@ -1518,7 +1564,6 @@ function renderResults(results, cfg, statWeights) {
       hitClass = 'hit-ok'; hitSuffix = ' ✓';
     }
 
-    // Active set bonuses for this result
     const ab = r.activeBonuses || {};
     const abKeys = Object.keys(ab).filter(k => ab[k] !== 1 && ab[k] !== 0);
 
@@ -1533,26 +1578,24 @@ function renderResults(results, cfg, statWeights) {
     html += `<span>Haste <span class="val">${(r.haste * 100).toFixed(1)}%</span></span>`;
     html += `<span>Hit (total) <span class="${hitClass}">${(hitTotal * 100).toFixed(1)}%${hitSuffix}</span></span>`;
     if (hitOver && statWeights) {
-      // Show wasted hit in SP-equivalent
       const wastedHitPct = r.hit - hitFromGearCap;
-      const wastedHitAsSP = wastedHitPct * 100 * statWeights.equiv; // very rough, hit isn't SP but gives context
+      const wastedHitAsSP = wastedHitPct * 100 * statWeights.equiv;
       html += `<span style="color:var(--orange);font-size:10px">(~${wastedHitAsSP.toFixed(0)} wasted hit% — look for alternatives with less hit)</span>`;
     }
     html += `</div>`;
 
-    // Active set bonuses for this gear set
     if (abKeys.length > 0) {
       html += `<div class="active-bonuses-row">`;
       html += `<span style="color:var(--muted);font-size:10px">Active set bonuses:</span>`;
       for (const k of abKeys) {
         const v = ab[k];
         let label = '';
-        if (k === 'bonusSP')          label = `+${v} SP`;
-        else if (k === 'drainMult')   label = `Drain ×${v}`;
-        else if (k === 'coaMult')     label = `CoA ×${v}`;
+        if (k === 'bonusSP')               label = `+${v} SP`;
+        else if (k === 'drainMult')        label = `Drain ×${v}`;
+        else if (k === 'coaMult')          label = `CoA ×${v}`;
         else if (k === 'coaFirstTickMult') label = `CoA first4 ×${v}`;
-        else if (k === 'corruptionMult') label = `Corr ×${v}`;
-        else if (k === 'siphonMult')  label = `Siphon ×${v}`;
+        else if (k === 'corruptionMult')   label = `Corr ×${v}`;
+        else if (k === 'siphonMult')       label = `Siphon ×${v}`;
         else label = `${k}=${v}`;
         html += `<span class="active-bonus-chip">${label}</span>`;
       }
@@ -1566,15 +1609,20 @@ function renderResults(results, cfg, statWeights) {
       for (const item of combo) {
         const isWanted = App.wantedIds.has(item.id);
         const parts = [];
-        const sp2 = iSP(item);        if (sp2) parts.push(`SP+${sp2}`);
+        const sp2 = iSP(item);         if (sp2) parts.push(`SP+${sp2}`);
         const h2  = iHaste(item, cfg); if (h2)  parts.push(`Hst+${(h2 * 100).toFixed(1)}%`);
         const t2  = iHit(item, cfg);   if (t2)  parts.push(`Hit+${(t2 * 100).toFixed(1)}%`);
         const slotLabel = slot === 'WeaponCombo'
           ? (isTwoHanded(item) ? 'Weapon 2H' : (combo.indexOf(item) === 0 ? 'Main Hand' : 'Off Hand'))
           : slot;
+        // Look up set name for display in results table
+        const setLabel = itemSetLabel(item);
+        const setHtml  = setLabel
+          ? ` <span style="color:var(--muted);font-size:10px">[${esc(setLabel)}]</span>`
+          : '';
         html += `<tr>
           <td>${slotLabel}</td>
-          <td class="item-name-td">${esc(item.name)}${item.set ? ` <span style="color:var(--muted);font-size:10px">[${esc(item.set)}]</span>` : ''}</td>
+          <td class="item-name-td">${esc(item.name)}${setHtml}</td>
           <td class="item-stat-td">${parts.join('  ')}</td>
           <td>${isWanted ? '<span class="wanted-mark">[W]</span>' : ''}</td>
         </tr>`;
@@ -1638,13 +1686,16 @@ function buildSetBonusUI() {
         if (k === 'siphonMult')       return 'Siphon Life \xd7' + v;
         return k + '=' + v;
       }).join(', ');
+      const setIdLabel = b.setId != null
+        ? `<code style="color:var(--accent-bright)">${b.setId}</code>`
+        : `<span style="color:var(--muted)">none — force-override only</span>`;
       html += '<div class="set-bonus-item">';
       html += '<input type="checkbox" id="sb-' + b.id + '" data-bonus-id="' + b.id + '">';
       html += '<div>';
       html += '<span class="set-bonus-pieces">' + b.pieces + 'pc</span> ';
       html += '<span class="set-bonus-desc">' + esc(b.desc) + '</span><br>';
       html += '<span class="set-bonus-effect">sim: ' + effectKeys + '</span><br>';
-      html += '<span class="set-bonus-settag">set tag: <code style="color:var(--accent-bright)">' + esc(b.setTag) + '</code></span>';
+      html += '<span class="set-bonus-settag">itemSets id: ' + setIdLabel + '</span>';
       html += '</div>';
       html += '</div>';
     }
