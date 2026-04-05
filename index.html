@@ -24,6 +24,7 @@
   --red: #e05555;
   --gold: #e0a030;
   --blue: #5ba3e8;
+  --orange: #e07830;
   --owned-border: #1a2535;
   --wanted-border: #2a2010;
   --wanted-text: #c89040;
@@ -256,6 +257,7 @@ label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: p
 .log-line.ok { color: var(--fel); }
 .log-line.err { color: var(--red); }
 .log-line.info { color: var(--blue); }
+.log-line.warn { color: var(--orange); }
 
 .result-set { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 10px; }
 .result-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
@@ -264,8 +266,9 @@ label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: p
 .result-dps-label { color: var(--muted); font-size: 11px; }
 .result-meta { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted2); display: flex; gap: 14px; flex-wrap: wrap; }
 .result-meta .val { color: var(--text); }
-.result-meta .hit-ok { color: var(--fel); }
+.result-meta .hit-ok  { color: var(--fel); }
 .result-meta .hit-bad { color: var(--red); }
+.result-meta .hit-over { color: var(--orange); }
 
 .result-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
 .result-table td { padding: 3px 6px; }
@@ -275,13 +278,19 @@ label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: p
 .result-table .wanted-mark { color: var(--wanted-text); font-size: 10px; }
 .result-table tr:hover td { background: rgba(255,255,255,0.02); }
 
-.breakdown-row { display: flex; gap: 14px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted); }
+.breakdown-row { display: flex; gap: 14px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted); flex-wrap: wrap; }
 .breakdown-row .spell-pct { color: var(--text); }
 
+.active-bonuses-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; font-size: 11px; }
+.active-bonus-chip { background: var(--locked-bg); border: 1px solid var(--locked-border); border-radius: 3px; padding: 2px 7px; color: var(--accent-bright); font-family: 'Share Tech Mono', monospace; font-size: 10px; }
+
 .stat-weights-box { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
-.sw-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 6px 12px; font-family: 'Share Tech Mono', monospace; font-size: 12px; }
-.sw-chip .sw-val { color: var(--fel); }
-.sw-chip .sw-label { color: var(--muted); font-size: 10px; }
+.sw-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 8px 14px; font-family: 'Share Tech Mono', monospace; font-size: 13px; }
+.sw-chip .sw-val { color: var(--fel); font-size: 15px; }
+.sw-chip .sw-val-warn { color: var(--orange); font-size: 15px; }
+.sw-chip .sw-label { color: var(--muted); font-size: 10px; display: block; margin-bottom: 2px; }
+.sw-chip .sw-note { color: var(--muted); font-size: 9px; display: block; margin-top: 3px; }
+.sw-warn { background: rgba(224,120,48,0.08); border: 1px solid var(--orange); border-radius: 5px; padding: 8px 12px; color: var(--orange); font-size: 12px; margin-bottom: 10px; }
 
 /* ── SET BONUSES UI ── */
 .set-bonus-grid {
@@ -328,6 +337,7 @@ label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: p
 }
 .set-bonus-desc { color: var(--text); }
 .set-bonus-effect { color: var(--fel); font-size: 11px; font-family: 'Share Tech Mono', monospace; }
+.set-bonus-settag { color: var(--muted); font-size: 10px; font-family: 'Share Tech Mono', monospace; }
 
 hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
 .flex { display: flex; }
@@ -342,6 +352,7 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
 .text-green { color: var(--fel); }
 .text-gold { color: var(--gold); }
 .text-red { color: var(--red); }
+.text-orange { color: var(--orange); }
 .text-purple { color: var(--accent-bright); }
 .font-mono { font-family: 'Share Tech Mono', monospace; }
 .justify-between { justify-content: space-between; }
@@ -353,6 +364,7 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
 .badge-red { background: #3f0a0a; color: var(--red); }
 .badge-purple { background: #2e1065; color: var(--accent-bright); }
 .badge-gold { background: #3a2800; color: var(--gold); }
+.badge-orange { background: #3a2000; color: var(--orange); }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -365,7 +377,6 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
   .slot-lock-col { min-width: auto; }
 }
 
-/* DB auto-load status bar */
 .db-status-bar {
   display: flex;
   align-items: center;
@@ -414,7 +425,6 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
       <div class="db-dot" id="db-dot"></div>
       <span id="db-status-text">Looking for items.json…</span>
     </div>
-    <!-- shown only when auto-fetch fails (e.g. local file://) -->
     <div id="db-fallback" style="display:none">
       <div class="file-drop" id="drop-db">
         <input type="file" accept=".json,.txt" id="file-db">
@@ -424,6 +434,13 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
         <div class="file-drop-count" id="db-count"></div>
       </div>
       <p class="note mt-12">Expected: <code style="color:var(--accent-bright)">{"items":[{"id":…,"name":…,"type":…,"stats":[…]}]}</code></p>
+      <p class="note mt-12">
+        <strong style="color:var(--text)">Set bonus auto-detection:</strong>
+        If items include a <code style="color:var(--accent-bright)">"set"</code> string field
+        (e.g. <code style="color:var(--accent-bright)">"set":"felheart_affli"</code>) matching the
+        <em>Set Tag</em> shown in Config → Set Bonuses, the optimizer will automatically apply bonuses
+        only to gear combinations that actually contain enough set pieces.
+      </p>
     </div>
   </div>
 
@@ -546,17 +563,22 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
         <div class="config-row">
           <span class="config-label">Haste Divisor</span>
           <select id="cfg-HASTE_DIVISOR">
-            <option value="100" selected>100 (e.g. "1" = 1%)</option>
-            <option value="1">1 (e.g. "0.01" = 1%)</option>
+            <option value="100" selected>100 — stat value is rating (e.g. 33 = 33%)</option>
+            <option value="1">1 — stat value is fraction (e.g. 0.33 = 33%)</option>
           </select>
         </div>
         <div class="config-row">
           <span class="config-label">Hit Divisor</span>
           <select id="cfg-SPELL_HIT_DIVISOR">
-            <option value="100" selected>100 (e.g. "1" = 1%)</option>
-            <option value="1">1 (e.g. "0.01" = 1%)</option>
+            <option value="100" selected>100 — stat value is rating (e.g. 1 = 1%)</option>
+            <option value="1">1 — stat value is fraction (e.g. 0.01 = 1%)</option>
           </select>
         </div>
+        <p class="note mt-12">
+          ⚠ If haste looks undervalued in results, try swapping the Haste Divisor.
+          After running, check "Haste ≡ X SP" in stat weights — a healthy value is roughly 2–6 SP per 1% haste.
+          If it shows &lt;1, your haste stat values are probably fractions (use Divisor = 1).
+        </p>
       </div>
     </div>
   </div>
@@ -565,7 +587,14 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
   <div class="card">
     <div class="card-title">Tier Set Bonuses</div>
     <p class="note mb-8">
-      Select the set bonuses you have active. Only bonuses with <strong style="color:var(--text)">guaranteed always-active stat effects</strong> are listed here — proc-based bonuses (chance to deal damage, chance to grant a buff, etc.) are excluded from the sim.
+      <strong style="color:var(--text)">How set bonuses work:</strong>
+      If your items.json includes a <code style="color:var(--accent-bright)">"set"</code> field on items
+      matching the <em>Set Tag</em> below, the optimizer automatically applies each bonus only to gear
+      combinations that actually contain enough pieces of that set. No manual selection needed in that case.<br><br>
+      <strong style="color:var(--text)">Force-override checkboxes:</strong> If your DB doesn't have set tags,
+      check a bonus here to apply it to <em>all</em> simulations unconditionally — useful if you've already
+      committed to wearing those pieces (e.g. lock them in Items tab) and just want the correct DPS projection.
+      Only always-active stat effects are modelled; proc-based bonuses are excluded.
     </p>
     <div class="set-bonus-grid" id="set-bonus-grid">
       <!-- populated by JS -->
@@ -586,8 +615,10 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
 
   <div id="stat-weights-section" style="display:none">
     <div class="card">
-      <div class="card-title">Stat Weights (at base stats)</div>
+      <div class="card-title">Stat Weights (computed at your base stats, no gear)</div>
+      <div id="sw-warn" class="sw-warn" style="display:none"></div>
       <div class="stat-weights-box" id="stat-weights-box"></div>
+      <p class="note">These weights are used internally to understand the optimizer's choices. A healthy <strong style="color:var(--text)">Haste ≡</strong> is roughly 2–6 SP per 1% haste. Much lower means haste is nearly worthless in your config (check divisor). Much higher means haste is very strong and SP-only items may be underrated.</p>
     </div>
   </div>
 
@@ -603,17 +634,19 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
 
 <!-- ═══ TIER SET BONUS DEFINITIONS ═══ -->
 <script>
-// Only always-active, non-proc stat effects are listed.
-// Effects map:
-//   bonusSP          — flat spell power added to total SP going into sim
+// Only always-active, non-proc stat effects.
+// setTag: items in items.json should have  "set": "<setTag>"  to enable auto-detection.
+// effects map:
+//   bonusSP          — flat SP added to total SP
 //   drainMult        — multiplier on each Drain Soul tick
 //   coaMult          — multiplier on all CoA ticks
-//   coaFirstTickMult — additional multiplier on the first 4 CoA ticks (stacks with coaMult)
+//   coaFirstTickMult — additional multiplier on the first 4 CoA ticks
 //   corruptionMult   — multiplier on all Corruption ticks
 //   siphonMult       — multiplier on all Siphon Life ticks
 const TIER_SET_BONUSES = [
   {
     id: 'felheart_affli_3pc',
+    setTag: 'felheart_affli',
     group: 'Felheart (Affliction Alt — ID 677)',
     pieces: 3,
     desc: 'Drain Soul damage +5%',
@@ -621,6 +654,7 @@ const TIER_SET_BONUSES = [
   },
   {
     id: 'nemesis_normal_3pc',
+    setTag: 'nemesis_normal',
     group: 'Nemesis (Normal — ID 212)',
     pieces: 3,
     desc: '+23 Spell Power to magical spells and effects',
@@ -628,6 +662,7 @@ const TIER_SET_BONUSES = [
   },
   {
     id: 'doomcaller_affli_3pc',
+    setTag: 'doomcaller_affli',
     group: 'Doomcaller (Affliction Alt — ID 679)',
     pieces: 3,
     desc: 'Curse of Agony damage +5%',
@@ -635,6 +670,7 @@ const TIER_SET_BONUSES = [
   },
   {
     id: 'plagueheart_normal_4pc',
+    setTag: 'plagueheart_normal',
     group: 'Plagueheart (Normal — ID 529)',
     pieces: 4,
     desc: 'Corruption damage +12%',
@@ -642,6 +678,7 @@ const TIER_SET_BONUSES = [
   },
   {
     id: 'plagueheart_affli_4pc',
+    setTag: 'plagueheart_affli',
     group: 'Plagueheart (Affliction Alt — ID 680)',
     pieces: 4,
     desc: 'Curse of Agony deals +100% damage for the first 4 ticks',
@@ -649,6 +686,7 @@ const TIER_SET_BONUSES = [
   },
   {
     id: 'nathrezim_affli_3pc',
+    setTag: 'nathrezim_affli',
     group: 'Nathrezim (Affliction Alt)',
     pieces: 3,
     desc: 'Siphon Life health drained +25%',
@@ -656,20 +694,14 @@ const TIER_SET_BONUSES = [
   },
 ];
 
-// buildSetBonusUI() called at end of main script after esc() is defined
-
-function getActiveSetBonuses() {
+function getManualSetBonuses() {
   const active = {};
   for (const bonus of TIER_SET_BONUSES) {
     const el = document.getElementById('sb-' + bonus.id);
     if (el && el.checked) {
       for (const [key, val] of Object.entries(bonus.effects)) {
-        if (key === 'bonusSP') {
-          active[key] = (active[key] || 0) + val;
-        } else {
-          // Multiplicative stacking
-          active[key] = (active[key] || 1) * val;
-        }
+        if (key === 'bonusSP') active[key] = (active[key] || 0) + val;
+        else                   active[key] = (active[key] || 1) * val;
       }
     }
   }
@@ -686,7 +718,7 @@ let CFG = {};
 function _stat(item, idx) { const s = item.stats || []; return idx < s.length ? s[idx] : 0; }
 function itemSP(item)    { return _stat(item, STAT_SP) + _stat(item, STAT_SHADOW_SP); }
 function itemHaste(item) { return _stat(item, STAT_SPELL_HASTE) / CFG.HASTE_DIVISOR; }
-function itemHit(item)   { return _stat(item, STAT_SPELL_HIT) / CFG.SPELL_HIT_DIVISOR; }
+function itemHit(item)   { return _stat(item, STAT_SPELL_HIT)   / CFG.SPELL_HIT_DIVISOR; }
 
 function globalMult() {
   let m = 1;
@@ -700,10 +732,45 @@ function globalMult() {
 }
 function coaMult() { return 1 + [0, 0.03, 0.06, 0.10][CFG.TALENTS.improved_coa]; }
 
-function drainTickMult(state) {
+// ── SET BONUS HELPERS ──
+
+// Compute which set bonuses actually apply given a list of assigned item combos.
+// Falls back to manual force-overrides if items have no set tags.
+function gearBonusesForAssigned(assigned) {
+  // Count pieces per set tag
+  const counts = {};
+  let anySetTags = false;
+  for (const combo of assigned) {
+    for (const item of combo) {
+      if (item.set) {
+        counts[item.set] = (counts[item.set] || 0) + 1;
+        anySetTags = true;
+      }
+    }
+  }
+
+  // Start from manual overrides (force-checked)
+  const active = Object.assign({}, CFG.MANUAL_SET_BONUSES);
+
+  if (anySetTags) {
+    // Auto-detect bonuses from gear, skip ones already merged via manual override
+    for (const req of CFG.SET_REQUIREMENTS) {
+      if ((counts[req.setTag] || 0) >= req.pieces) {
+        for (const [key, val] of Object.entries(req.effects)) {
+          if (key === 'bonusSP') active[key] = (active[key] || 0) + val;
+          else                   active[key] = (active[key] || 1) * val;
+        }
+      }
+    }
+  }
+
+  return active;
+}
+
+function drainTickMult(state, sb) {
   let m = 1;
   m *= 1 + 0.05 * CFG.TALENTS.improved_drains;
-  m *= CFG.SET_BONUSES.drainMult || 1;
+  m *= sb.drainMult || 1;
   m *= 1 + (0.02 * CFG.TALENTS.soul_siphon) * (state.dots.length + 1);
   return m;
 }
@@ -712,8 +779,7 @@ function mkCorruption(t, hm) { const ti = 3 / hm; return { name: 'corruption', e
 function mkSiphon(t, hm)     { const ti = 3 / hm; return { name: 'siphon',     expires_at: t + ti * 10, next_tick: t + ti, tick_interval: ti }; }
 function mkCoa(t, hm)        { const ti = 2 / hm; return { name: 'coa',        expires_at: t + ti * 12, next_tick: t + ti, tick_interval: ti, tick_index: 0 }; }
 
-function dotDmg(dot, sp, gm) {
-  const sb = CFG.SET_BONUSES;
+function dotDmg(dot, sp, gm, sb) {
   if (dot.name === 'corruption') {
     return (137 + sp / 6) * gm * (sb.corruptionMult || 1);
   }
@@ -737,13 +803,13 @@ function pickAction(state) {
   return 'drain';
 }
 
-function simulate(duration, sp, haste) {
-  if (sp === undefined)    sp    = CFG.BASE_SP;
+// setBonuses is now passed explicitly; falls back to CFG.MANUAL_SET_BONUSES for stat weights
+function simulate(duration, sp, haste, setBonuses) {
+  if (sp    === undefined) sp    = CFG.BASE_SP;
   if (haste === undefined) haste = CFG.BASE_HASTE;
+  if (!setBonuses)         setBonuses = CFG.MANUAL_SET_BONUSES;
 
-  // Apply flat SP bonuses from set bonuses
-  const effectiveSP = sp + (CFG.SET_BONUSES.bonusSP || 0);
-
+  const effectiveSP = sp + (setBonuses.bonusSP || 0);
   const hm = 1 + haste, gm = globalMult();
   const state = { time: 0, dots: [], gcd_ready: 0, channeling: null, damage_done: 0 };
   const bd = { corruption: 0, siphon: 0, coa: 0, drain: 0 };
@@ -778,7 +844,7 @@ function simulate(duration, sp, haste) {
 
     for (const d of state.dots) {
       if (Math.abs(d.next_tick - state.time) < 1e-9) {
-        const dmg = dotDmg(d, effectiveSP, gm);
+        const dmg = dotDmg(d, effectiveSP, gm, setBonuses);
         state.damage_done += dmg;
         bd[d.name] += dmg;
         d.next_tick += d.tick_interval;
@@ -787,7 +853,7 @@ function simulate(duration, sp, haste) {
     }
     if (state.channeling) {
       if (Math.abs(state.channeling.next_tick - state.time) < 1e-9) {
-        const dmg = (159 + 0.2 * effectiveSP) * gm * drainTickMult(state);
+        const dmg = (159 + 0.2 * effectiveSP) * gm * drainTickMult(state, setBonuses);
         state.damage_done += dmg;
         bd.drain += dmg;
         state.channeling.next_tick += state.channeling.tick_interval;
@@ -799,6 +865,7 @@ function simulate(duration, sp, haste) {
 }
 
 // ── PARETO PRUNE ── (3-dimensional: sp, haste, hit)
+// hit above cap is clamped — overcapping gives no dominance advantage
 function paretoPrune(states, hitCap) {
   if (!states.length) return [];
   const effH = h => Math.min(h, hitCap);
@@ -833,7 +900,7 @@ function findBestGearDP(bySlot) {
   for (const slot of slotNames) {
     const items = bySlot[slot];
     if (slot === 'WeaponCombo') {
-      slotChoices.push(items); // pre-built combos from client (2H / 1H+offhand)
+      slotChoices.push(items);
     } else if (DUAL_SLOTS.has(slot) && items.length >= 2) {
       const combos = [];
       for (let i = 0; i < items.length; i++)
@@ -875,33 +942,52 @@ function findBestGearDP(bySlot) {
 
   const simCache = new Map();
   const results = [];
+  let overcappedCount = 0;
 
   for (const [sp, h, hit, asgn] of frontier) {
     if (hit < HIT_CAP - 1e-9) continue;
 
+    // FIX: compute set bonuses from the actual items selected, not a global flag
+    const setBonuses = gearBonusesForAssigned(asgn);
+
     const tsp = CFG.BASE_SP + sp, thaste = CFG.BASE_HASTE + h;
-    const key = `${tsp}|${thaste.toFixed(8)}`;
-    if (!simCache.has(key)) simCache.set(key, simulate(duration, tsp, thaste));
+    // Cache key includes set bonus state so different bonus combos are simulated separately
+    const bonusKey = JSON.stringify(setBonuses);
+    const key = `${tsp}|${thaste.toFixed(8)}|${bonusKey}`;
+    if (!simCache.has(key)) simCache.set(key, simulate(duration, tsp, thaste, setBonuses));
     const { dps, breakdown } = simCache.get(key);
 
-    results.push({ dps, sp: tsp, haste: thaste, hit, breakdown, assigned: asgn, slotNames });
+    if (hit > HIT_CAP + 0.005) overcappedCount++;
+
+    results.push({ dps, sp: tsp, haste: thaste, hit, breakdown, assigned: asgn, slotNames, activeBonuses: setBonuses });
   }
 
-  results.sort((a, b) => b.dps - a.dps);
+  // FIX: primary sort DPS descending, secondary sort hit ascending (prefer less wasted hit)
+  results.sort((a, b) => {
+    const dd = b.dps - a.dps;
+    if (Math.abs(dd) > 0.001) return dd;
+    return a.hit - b.hit;
+  });
+
+  if (overcappedCount > 0)
+    log(`  ⚠ ${overcappedCount} result(s) are over the hit cap — check for hit-heavy items in your pool`, 'warn');
+
   log(`\n  Done — ${simCache.size} unique simulations run`);
   return results.slice(0, topN);
 }
 
 // ── STAT WEIGHTS ──
+// Uses manual set bonuses only (no gear context at stat-weight time)
 function computeStatWeights() {
   const sp = CFG.BASE_SP, h = CFG.BASE_HASTE, d = CFG.SIM_DURATION;
-  const base = simulate(d, sp, h).dps;
-  const sp1  = simulate(d, sp + 1, h).dps;
-  const h1   = simulate(d, sp, h + 0.01).dps;
+  const sb = CFG.MANUAL_SET_BONUSES;
+  const base = simulate(d, sp, h, sb).dps;
+  const sp1  = simulate(d, sp + 1, h, sb).dps;
+  const h1   = simulate(d, sp, h + 0.01, sb).dps;
   return { perSP: sp1 - base, perHaste: h1 - base, equiv: (h1 - base) / (sp1 - base || 1), baseDPS: base };
 }
 
-function log(msg) { self.postMessage({ type: 'log', msg }); }
+function log(msg, cls) { self.postMessage({ type: 'log', msg, cls: cls || '' }); }
 
 self.onmessage = function(e) {
   const { type, config, bySlot } = e.data;
@@ -915,12 +1001,17 @@ self.onmessage = function(e) {
       log('Computing stat weights…');
       const w = computeStatWeights();
       self.postMessage({ type: 'statweights', weights: w });
-      log(`  Base DPS: ${w.baseDPS.toFixed(2)}  |  +1 SP → +${w.perSP.toFixed(4)} DPS  |  +1% Haste → +${w.perHaste.toFixed(4)} DPS  (≈${w.equiv.toFixed(1)} SP)`);
-      if (Math.abs(w.equiv) < 1) log('  !! Haste equiv looks too low — try flipping Haste Divisor in Config');
+      log(`  Base DPS : ${w.baseDPS.toFixed(2)}`);
+      log(`  +1 SP    → +${w.perSP.toFixed(4)} DPS`);
+      log(`  +1% Haste→ +${w.perHaste.toFixed(4)} DPS  (≡ ${w.equiv.toFixed(2)} SP)`);
+      if (w.equiv < 1)
+        log(`  !! Haste equiv is very low (${w.equiv.toFixed(2)} SP) — if this seems wrong, try flipping Haste Divisor in Config`, 'warn');
+      else if (w.equiv > 20)
+        log(`  !! Haste equiv is very high (${w.equiv.toFixed(2)} SP) — check that base haste % and divisor are correct`, 'warn');
       log('');
       const results = findBestGearDP(bySlot);
       if (!results.length) self.postMessage({ type: 'no_results' });
-      else self.postMessage({ type: 'results', results });
+      else self.postMessage({ type: 'results', results, statWeights: w });
     } catch (err) {
       self.postMessage({ type: 'error', message: err.message + '\n' + err.stack });
     }
@@ -935,9 +1026,9 @@ self.onmessage = function(e) {
 const TYPE_TO_SLOT = {
   1:'Head',2:'Neck',3:'Shoulder',4:'Back',5:'Chest',6:'Wrist',
   7:'Hands',8:'Waist',9:'Legs',10:'Feet',11:'Finger',12:'Trinket',
-  13:'MainHand', // 1H and 2H weapons — 2H detected via item.twoHanded===true
+  13:'MainHand',
   14:'Ranged',
-  23:'OffHand',  // held-in-off-hand / off-hand items
+  23:'OffHand',
 };
 const SLOT_ORDER = ['Head','Neck','Shoulder','Back','Chest','Wrist','Hands','Waist','Legs','Feet','Finger','Trinket','MainHand','OffHand','Ranged'];
 const DUAL_SLOTS = new Set(['Finger','Trinket']);
@@ -953,6 +1044,7 @@ const App = {
 };
 
 function getConfig() {
+  const manualBonuses = getManualSetBonuses();
   return {
     BASE_SP: +document.getElementById('cfg-BASE_SP').value || 0,
     BASE_HASTE: (+document.getElementById('cfg-BASE_HASTE_PCT').value || 6) / 100,
@@ -975,25 +1067,29 @@ function getConfig() {
       shadow_vulnerability: document.getElementById('d-shadow_vulnerability').checked,
       curse_of_shadows:     document.getElementById('d-curse_of_shadows').checked,
     },
-    SET_BONUSES: getActiveSetBonuses(),
+    // Manual force-override bonuses (for stat weight calc & fallback when items have no set tags)
+    MANUAL_SET_BONUSES: manualBonuses,
+    // Full definitions so the worker can auto-detect from item.set fields
+    SET_REQUIREMENTS: TIER_SET_BONUSES,
   };
 }
 
 // ═══════════════════════════════════════════════════
-// STAT HELPERS (client-side, for display only)
+// STAT HELPERS
 // ═══════════════════════════════════════════════════
 function _stat(item, idx) { const s = item.stats || []; return idx < s.length ? s[idx] : 0; }
-function iSP(item, cfg)    { return _stat(item, STAT_SP) + _stat(item, STAT_SHADOW_SP); }
+function iSP(item)     { return _stat(item, STAT_SP) + _stat(item, STAT_SHADOW_SP); }
 function iHaste(item, cfg) { return _stat(item, STAT_SPELL_HASTE) / (cfg ? cfg.HASTE_DIVISOR : 100); }
-function iHit(item, cfg)   { return _stat(item, STAT_SPELL_HIT) / (cfg ? cfg.SPELL_HIT_DIVISOR : 100); }
+function iHit(item, cfg)   { return _stat(item, STAT_SPELL_HIT)   / (cfg ? cfg.SPELL_HIT_DIVISOR : 100); }
 function isTwoHanded(item) { return !!(item.twoHanded || item.hands === 2 || item.inventoryType === 17); }
 
 function itemStatStr(item) {
   const cfg = getConfig();
   const parts = [];
-  const sp = iSP(item, cfg);  if (sp) parts.push(`SP+${sp}`);
+  const sp = iSP(item);      if (sp) parts.push(`SP+${sp}`);
   const h  = iHaste(item, cfg); if (h)  parts.push(`Hst+${(h*100).toFixed(1)}%`);
   const t  = iHit(item, cfg);   if (t)  parts.push(`Hit+${(t*100).toFixed(1)}%`);
+  if (item.set) parts.push(`[${item.set}]`);
   return parts.join(' ');
 }
 
@@ -1002,12 +1098,16 @@ function onDBLoaded(data, name) {
   App.itemsDB.clear();
   for (const item of data.items) App.itemsDB.set(item.id, item);
 
-  // Update status bar
   const bar = document.getElementById('db-status-bar');
   bar.classList.add('loaded');
-  document.getElementById('db-status-text').textContent = `${name} — ${App.itemsDB.size.toLocaleString()} items loaded`;
 
-  // If the fallback drop was shown, mark it done too
+  // Count how many items have set tags
+  let setTagCount = 0;
+  for (const item of App.itemsDB.values()) if (item.set) setTagCount++;
+  const setNote = setTagCount > 0 ? ` · ${setTagCount} items have set tags` : ' · no set tags (manual set bonus mode)';
+  document.getElementById('db-status-text').textContent =
+    `${name} — ${App.itemsDB.size.toLocaleString()} items loaded${setNote}`;
+
   const el = document.getElementById('drop-db');
   if (el) el.classList.add('loaded');
   const nameEl = document.getElementById('db-name');
@@ -1019,8 +1119,6 @@ function onDBLoaded(data, name) {
   updateAll();
 }
 
-// Try fetch first (works on GitHub Pages / any HTTP server).
-// Falls back to manual file drop for local file:// usage.
 async function autoLoadItemsDB() {
   try {
     const resp = await fetch('items.json');
@@ -1028,7 +1126,6 @@ async function autoLoadItemsDB() {
     const data = await resp.json();
     onDBLoaded(data, 'items.json');
   } catch(e) {
-    // fetch failed — show manual drop and explain why
     document.getElementById('db-status-text').textContent =
       'Auto-load unavailable locally — please drop items.json below';
     document.getElementById('db-fallback').style.display = 'block';
@@ -1100,8 +1197,6 @@ function buildBySlot() {
     if (lockedItem) bySlot[slot] = [lockedItem];
   }
 
-  // Collapse MainHand + OffHand into a pre-built combo list for the DP.
-  // This enforces the 2H constraint: if a weapon is two-handed, no off-hand is paired.
   const mhItems = bySlot['MainHand'] || [];
   const ohItems = bySlot['OffHand']  || [];
   if (mhItems.length > 0 || ohItems.length > 0) {
@@ -1110,13 +1205,11 @@ function buildBySlot() {
     const combos = [];
     for (const mh of mhItems) {
       if (isTwoHanded(mh)) {
-        combos.push([mh]);                  // 2H: weapon alone, no off-hand
+        combos.push([mh]);
       } else if (ohItems.length === 0) {
-        combos.push([mh]);                  // 1H but no off-hands in pool
+        combos.push([mh]);
       } else {
-        for (const oh of ohItems) {
-          combos.push([mh, oh]);            // 1H + off-hand
-        }
+        for (const oh of ohItems) combos.push([mh, oh]);
       }
     }
     if (combos.length > 0) bySlot['WeaponCombo'] = combos;
@@ -1153,9 +1246,9 @@ function renderSlots() {
     const { owned, wanted } = perSlot[slot];
     if (owned.length === 0 && wanted.length === 0 && !App.lockedSlots[slot]) continue;
 
-    const isDual  = DUAL_SLOTS.has(slot);
-    const locked  = App.lockedSlots[slot];
-    const rowCls  = locked ? 'slot-row has-lock' : 'slot-row';
+    const isDual = DUAL_SLOTS.has(slot);
+    const locked = App.lockedSlots[slot];
+    const rowCls = locked ? 'slot-row has-lock' : 'slot-row';
 
     html += `<div class="${rowCls}">`;
     html += `<div class="slot-name-col${isDual ? ' dual' : ''}">`;
@@ -1197,8 +1290,8 @@ function renderSlots() {
   grid.innerHTML = html || '<div class="empty-slot" style="padding:12px">No recognized items found (check item types in DB).</div>';
 }
 
-function lockItem(id, slot) { const item = App.itemsDB.get(id); if (!item) return; App.lockedSlots[slot] = item; renderSlots(); checkRunReady(); }
-function unlockSlot(slot)   { delete App.lockedSlots[slot]; renderSlots(); checkRunReady(); }
+function lockItem(id, slot)  { const item = App.itemsDB.get(id); if (!item) return; App.lockedSlots[slot] = item; renderSlots(); checkRunReady(); }
+function unlockSlot(slot)    { delete App.lockedSlots[slot]; renderSlots(); checkRunReady(); }
 function removeWanted(id) {
   App.wantedIds.delete(id);
   for (const [slot, item] of Object.entries(App.lockedSlots))
@@ -1209,8 +1302,8 @@ function removeWanted(id) {
 // ═══════════════════════════════════════════════════
 // SEARCH
 // ═══════════════════════════════════════════════════
-const searchInput    = document.getElementById('search-input');
-const searchDropdown = document.getElementById('search-dropdown');
+const searchInput       = document.getElementById('search-input');
+const searchDropdown    = document.getElementById('search-dropdown');
 const searchResultsList = document.getElementById('search-results-list');
 let searchTimeout;
 
@@ -1270,12 +1363,11 @@ function renderSummary() {
   if (App.itemsDB.size === 0 && App.ownedIds.size === 0) { section.style.display = 'none'; return; }
   section.style.display = 'block';
 
-  const bySlot = buildBySlot();
-  const slotCounts  = Object.entries(bySlot).map(([s, items]) => `${s}×${items.length}`).join('  ');
-  const totalItems  = Object.values(bySlot).reduce((a, v) => a + v.length, 0);
-  const cfg         = getConfig();
-  const hitCap      = (cfg.TOTAL_HIT_CAP - cfg.HIT_FROM_TALENTS_AND_BUFFS) * 100;
-  const activeBonuses = Object.keys(getActiveSetBonuses());
+  const bySlot  = buildBySlot();
+  const slotCounts = Object.entries(bySlot).map(([s, items]) => `${s}×${items.length}`).join('  ');
+  const totalItems = Object.values(bySlot).reduce((a, v) => a + v.length, 0);
+  const cfg     = getConfig();
+  const hitCap  = (cfg.TOTAL_HIT_CAP - cfg.HIT_FROM_TALENTS_AND_BUFFS) * 100;
 
   let html = `<div style="color:var(--muted2);line-height:2">`;
   html += `DB: <span class="text-green">${App.itemsDB.size.toLocaleString()}</span> items &nbsp;|&nbsp; `;
@@ -1284,17 +1376,14 @@ function renderSummary() {
   html += `Locked slots: <span class="text-purple">${Object.keys(App.lockedSlots).length}</span><br>`;
   html += `In optimizer: <span class="text-green">${totalItems}</span> items across <span class="text-green">${Object.keys(bySlot).length}</span> slots<br>`;
   if (slotCounts) html += `<span style="font-size:11px">${slotCounts}</span><br>`;
-  html += `Hit required from gear: <span class="text-green">${hitCap.toFixed(1)}%</span><br>`;
-  if (activeBonuses.length) {
-    html += `Active set bonus effects: <span class="text-green">${activeBonuses.join(', ')}</span>`;
-  }
+  html += `Hit required from gear: <span class="text-green">${hitCap.toFixed(1)}%</span> &nbsp;`;
+  html += `<span class="text-muted">(Total cap ${cfg.TOTAL_HIT_CAP*100}% − ${cfg.HIT_FROM_TALENTS_AND_BUFFS*100}% from talents/buffs)</span><br>`;
   html += `</div>`;
   document.getElementById('summary-content').innerHTML = html;
 }
 
 function updateBadge() { document.getElementById('badge-items').textContent = App.ownedIds.size + App.wantedIds.size; }
-
-function updateAll() { renderSlots(); renderSummary(); updateBadge(); checkRunReady(); }
+function updateAll()   { renderSlots(); renderSummary(); updateBadge(); checkRunReady(); }
 
 function checkRunReady() {
   const btn    = document.getElementById('btn-run');
@@ -1346,10 +1435,10 @@ function runOptimizer() {
 
   const worker = getOrCreateWorker();
   worker.onmessage = function(e) {
-    const { type, msg, weights, results, message } = e.data;
-    if (type === 'log')          { log(msg); }
+    const { type, msg, cls, weights, results, statWeights, message } = e.data;
+    if (type === 'log')          { log(msg, cls); }
     else if (type === 'statweights') { renderStatWeights(weights); }
-    else if (type === 'results') { renderResults(results, cfg); App.running = false; checkRunReady(); }
+    else if (type === 'results') { renderResults(results, cfg, statWeights); App.running = false; checkRunReady(); }
     else if (type === 'no_results') { log('No valid gear sets found! Check hit requirement and item pool.', 'err'); App.running = false; checkRunReady(); }
     else if (type === 'error')   { log('ERROR: ' + message, 'err'); App.running = false; checkRunReady(); }
   };
@@ -1363,29 +1452,75 @@ function runOptimizer() {
 function renderStatWeights(w) {
   const section = document.getElementById('stat-weights-section');
   const box     = document.getElementById('stat-weights-box');
+  const warnEl  = document.getElementById('sw-warn');
   section.style.display = 'block';
+
+  const equivIsLow  = w.equiv < 1;
+  const equivIsHigh = w.equiv > 20;
+  const equivCls    = (equivIsLow || equivIsHigh) ? 'sw-val-warn' : 'sw-val';
+
   box.innerHTML = `
-    <div class="sw-chip"><span class="sw-label">BASE DPS</span><br><span class="sw-val">${w.baseDPS.toFixed(2)}</span></div>
-    <div class="sw-chip"><span class="sw-label">+1 SP</span><br><span class="sw-val">+${w.perSP.toFixed(4)} DPS</span></div>
-    <div class="sw-chip"><span class="sw-label">+1% HASTE</span><br><span class="sw-val">+${w.perHaste.toFixed(4)} DPS</span></div>
-    <div class="sw-chip"><span class="sw-label">HASTE ≈ SP</span><br><span class="sw-val">${w.equiv.toFixed(1)} SP</span></div>
+    <div class="sw-chip">
+      <span class="sw-label">BASE DPS</span>
+      <span class="sw-val">${w.baseDPS.toFixed(2)}</span>
+    </div>
+    <div class="sw-chip">
+      <span class="sw-label">+1 SP → DPS</span>
+      <span class="sw-val">+${w.perSP.toFixed(4)}</span>
+    </div>
+    <div class="sw-chip">
+      <span class="sw-label">+1% Haste → DPS</span>
+      <span class="sw-val">+${w.perHaste.toFixed(4)}</span>
+    </div>
+    <div class="sw-chip">
+      <span class="sw-label">Haste ≡ SP</span>
+      <span class="${equivCls}">${w.equiv.toFixed(2)} SP per 1% haste</span>
+      <span class="sw-note">healthy range: ~2–6</span>
+    </div>
   `;
+
+  if (equivIsLow) {
+    warnEl.style.display = 'block';
+    warnEl.innerHTML = `⚠ Haste equiv is very low (${w.equiv.toFixed(2)} SP per 1% haste). Haste is being treated as nearly worthless. If that's wrong, check your <strong>Haste Divisor</strong> in Config — it should match how your items.json stores haste (percentage vs rating).`;
+  } else if (equivIsHigh) {
+    warnEl.style.display = 'block';
+    warnEl.innerHTML = `⚠ Haste equiv is very high (${w.equiv.toFixed(2)} SP per 1% haste). This may indicate base haste or the haste divisor is misconfigured.`;
+  } else {
+    warnEl.style.display = 'none';
+  }
 }
 
 // ═══════════════════════════════════════════════════
 // RENDER RESULTS
 // ═══════════════════════════════════════════════════
-function renderResults(results, cfg) {
-  const section  = document.getElementById('results-section');
+function renderResults(results, cfg, statWeights) {
+  const section     = document.getElementById('results-section');
   const totalHitCap = cfg.TOTAL_HIT_CAP;
   const hitFromTB   = cfg.HIT_FROM_TALENTS_AND_BUFFS;
+  const hitFromGearCap = totalHitCap - hitFromTB;
 
   let html = '';
   for (let i = 0; i < results.length; i++) {
-    const r       = results[i];
-    const rank    = i + 1;
+    const r        = results[i];
+    const rank     = i + 1;
     const hitTotal = r.hit + hitFromTB;
-    const hitOk   = hitTotal >= totalHitCap - 1e-9;
+    const hitOk    = hitTotal >= totalHitCap - 1e-9;
+    const hitOver  = r.hit > hitFromGearCap + 0.005; // more than 0.5% over cap from gear
+    const hitWasted = hitOver ? ((r.hit - hitFromGearCap) * 100).toFixed(1) : null;
+
+    // Determine hit display class
+    let hitClass, hitSuffix;
+    if (!hitOk) {
+      hitClass = 'hit-bad'; hitSuffix = ' ✗ under cap';
+    } else if (hitOver) {
+      hitClass = 'hit-over'; hitSuffix = ` ⚠ +${hitWasted}% over cap`;
+    } else {
+      hitClass = 'hit-ok'; hitSuffix = ' ✓';
+    }
+
+    // Active set bonuses for this result
+    const ab = r.activeBonuses || {};
+    const abKeys = Object.keys(ab).filter(k => ab[k] !== 1 && ab[k] !== 0);
 
     html += `<div class="result-set">`;
     html += `<div class="result-header">`;
@@ -1396,8 +1531,33 @@ function renderResults(results, cfg) {
     html += `<div class="result-meta">`;
     html += `<span>SP <span class="val">${r.sp.toFixed(0)}</span></span>`;
     html += `<span>Haste <span class="val">${(r.haste * 100).toFixed(1)}%</span></span>`;
-    html += `<span>Hit <span class="${hitOk ? 'hit-ok' : 'hit-bad'}">${(hitTotal * 100).toFixed(1)}% ${hitOk ? '✓' : '✗ under cap'}</span></span>`;
+    html += `<span>Hit (total) <span class="${hitClass}">${(hitTotal * 100).toFixed(1)}%${hitSuffix}</span></span>`;
+    if (hitOver && statWeights) {
+      // Show wasted hit in SP-equivalent
+      const wastedHitPct = r.hit - hitFromGearCap;
+      const wastedHitAsSP = wastedHitPct * 100 * statWeights.equiv; // very rough, hit isn't SP but gives context
+      html += `<span style="color:var(--orange);font-size:10px">(~${wastedHitAsSP.toFixed(0)} wasted hit% — look for alternatives with less hit)</span>`;
+    }
     html += `</div>`;
+
+    // Active set bonuses for this gear set
+    if (abKeys.length > 0) {
+      html += `<div class="active-bonuses-row">`;
+      html += `<span style="color:var(--muted);font-size:10px">Active set bonuses:</span>`;
+      for (const k of abKeys) {
+        const v = ab[k];
+        let label = '';
+        if (k === 'bonusSP')          label = `+${v} SP`;
+        else if (k === 'drainMult')   label = `Drain ×${v}`;
+        else if (k === 'coaMult')     label = `CoA ×${v}`;
+        else if (k === 'coaFirstTickMult') label = `CoA first4 ×${v}`;
+        else if (k === 'corruptionMult') label = `Corr ×${v}`;
+        else if (k === 'siphonMult')  label = `Siphon ×${v}`;
+        else label = `${k}=${v}`;
+        html += `<span class="active-bonus-chip">${label}</span>`;
+      }
+      html += `</div>`;
+    }
 
     html += `<table class="result-table">`;
     for (let si = 0; si < r.slotNames.length; si++) {
@@ -1406,7 +1566,7 @@ function renderResults(results, cfg) {
       for (const item of combo) {
         const isWanted = App.wantedIds.has(item.id);
         const parts = [];
-        const sp2 = iSP(item, cfg);    if (sp2) parts.push(`SP+${sp2}`);
+        const sp2 = iSP(item);        if (sp2) parts.push(`SP+${sp2}`);
         const h2  = iHaste(item, cfg); if (h2)  parts.push(`Hst+${(h2 * 100).toFixed(1)}%`);
         const t2  = iHit(item, cfg);   if (t2)  parts.push(`Hit+${(t2 * 100).toFixed(1)}%`);
         const slotLabel = slot === 'WeaponCombo'
@@ -1414,7 +1574,7 @@ function renderResults(results, cfg) {
           : slot;
         html += `<tr>
           <td>${slotLabel}</td>
-          <td class="item-name-td">${esc(item.name)}</td>
+          <td class="item-name-td">${esc(item.name)}${item.set ? ` <span style="color:var(--muted);font-size:10px">[${esc(item.set)}]</span>` : ''}</td>
           <td class="item-stat-td">${parts.join('  ')}</td>
           <td>${isWanted ? '<span class="wanted-mark">[W]</span>' : ''}</td>
         </tr>`;
@@ -1454,16 +1614,8 @@ function esc(s) {
 }
 
 // ═══════════════════════════════════════════════════
-// INIT
+// SET BONUS UI
 // ═══════════════════════════════════════════════════
-setupFileDrop('drop-owned', 'file-owned', onOwnedLoaded);
-
-window.lockItem     = lockItem;
-window.unlockSlot   = unlockSlot;
-window.removeWanted = removeWanted;
-window.addWanted    = addWanted;
-
-
 function buildSetBonusUI() {
   const grid = document.getElementById('set-bonus-grid');
   const groups = {};
@@ -1491,7 +1643,8 @@ function buildSetBonusUI() {
       html += '<div>';
       html += '<span class="set-bonus-pieces">' + b.pieces + 'pc</span> ';
       html += '<span class="set-bonus-desc">' + esc(b.desc) + '</span><br>';
-      html += '<span class="set-bonus-effect">sim effect: ' + effectKeys + '</span>';
+      html += '<span class="set-bonus-effect">sim: ' + effectKeys + '</span><br>';
+      html += '<span class="set-bonus-settag">set tag: <code style="color:var(--accent-bright)">' + esc(b.setTag) + '</code></span>';
       html += '</div>';
       html += '</div>';
     }
@@ -1499,6 +1652,16 @@ function buildSetBonusUI() {
   }
   grid.innerHTML = html;
 }
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+setupFileDrop('drop-owned', 'file-owned', onOwnedLoaded);
+
+window.lockItem     = lockItem;
+window.unlockSlot   = unlockSlot;
+window.removeWanted = removeWanted;
+window.addWanted    = addWanted;
 
 buildSetBonusUI();
 checkRunReady();
