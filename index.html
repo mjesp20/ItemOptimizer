@@ -656,44 +656,7 @@ const TIER_SET_BONUSES = [
   },
 ];
 
-// Render the set bonus UI
-(function buildSetBonusUI() {
-  const grid = document.getElementById('set-bonus-grid');
-  // Group by 'group' field
-  const groups = {};
-  for (const bonus of TIER_SET_BONUSES) {
-    if (!groups[bonus.group]) groups[bonus.group] = [];
-    groups[bonus.group].push(bonus);
-  }
-  let html = '';
-  for (const [groupName, bonuses] of Object.entries(groups)) {
-    html += `<div class="set-bonus-group">`;
-    html += `<div class="set-bonus-group-name">${esc(groupName)}</div>`;
-    for (const b of bonuses) {
-      const effectKeys = Object.keys(b.effects).map(k => {
-        const v = b.effects[k];
-        if (k === 'bonusSP')          return `+${v} SP`;
-        if (k === 'drainMult')        return `Drain Soul ×${v}`;
-        if (k === 'coaMult')          return `CoA ×${v}`;
-        if (k === 'coaFirstTickMult') return `CoA first 4 ticks ×${v}`;
-        if (k === 'corruptionMult')   return `Corruption ×${v}`;
-        if (k === 'siphonMult')       return `Siphon Life ×${v}`;
-        return `${k}=${v}`;
-      }).join(', ');
-
-      html += `<div class="set-bonus-item">`;
-      html += `<input type="checkbox" id="sb-${b.id}" data-bonus-id="${b.id}">`;
-      html += `<div>`;
-      html += `<span class="set-bonus-pieces">${b.pieces}pc</span> `;
-      html += `<span class="set-bonus-desc">${esc(b.desc)}</span><br>`;
-      html += `<span class="set-bonus-effect">sim effect: ${effectKeys}</span>`;
-      html += `</div>`;
-      html += `</div>`;
-    }
-    html += `</div>`;
-  }
-  grid.innerHTML = html;
-})();
+// buildSetBonusUI() called at end of main script after esc() is defined
 
 function getActiveSetBonuses() {
   const active = {};
@@ -869,7 +832,9 @@ function findBestGearDP(bySlot) {
   const slotChoices = [];
   for (const slot of slotNames) {
     const items = bySlot[slot];
-    if (DUAL_SLOTS.has(slot) && items.length >= 2) {
+    if (slot === 'WeaponCombo') {
+      slotChoices.push(items); // pre-built combos from client (2H / 1H+offhand)
+    } else if (DUAL_SLOTS.has(slot) && items.length >= 2) {
       const combos = [];
       for (let i = 0; i < items.length; i++)
         for (let j = i + 1; j < items.length; j++)
@@ -970,9 +935,11 @@ self.onmessage = function(e) {
 const TYPE_TO_SLOT = {
   1:'Head',2:'Neck',3:'Shoulder',4:'Back',5:'Chest',6:'Wrist',
   7:'Hands',8:'Waist',9:'Legs',10:'Feet',11:'Finger',12:'Trinket',
-  13:'Weapon',14:'Ranged'
+  13:'MainHand', // 1H and 2H weapons — 2H detected via item.twoHanded===true
+  14:'Ranged',
+  23:'OffHand',  // held-in-off-hand / off-hand items
 };
-const SLOT_ORDER = ['Head','Neck','Shoulder','Back','Chest','Wrist','Hands','Waist','Legs','Feet','Finger','Trinket','Weapon','Ranged'];
+const SLOT_ORDER = ['Head','Neck','Shoulder','Back','Chest','Wrist','Hands','Waist','Legs','Feet','Finger','Trinket','MainHand','OffHand','Ranged'];
 const DUAL_SLOTS = new Set(['Finger','Trinket']);
 const STAT_SP=5, STAT_SHADOW_SP=11, STAT_SPELL_HIT=13, STAT_SPELL_HASTE=15;
 
@@ -1019,6 +986,7 @@ function _stat(item, idx) { const s = item.stats || []; return idx < s.length ? 
 function iSP(item, cfg)    { return _stat(item, STAT_SP) + _stat(item, STAT_SHADOW_SP); }
 function iHaste(item, cfg) { return _stat(item, STAT_SPELL_HASTE) / (cfg ? cfg.HASTE_DIVISOR : 100); }
 function iHit(item, cfg)   { return _stat(item, STAT_SPELL_HIT) / (cfg ? cfg.SPELL_HIT_DIVISOR : 100); }
+function isTwoHanded(item) { return !!(item.twoHanded || item.hands === 2 || item.inventoryType === 17); }
 
 function itemStatStr(item) {
   const cfg = getConfig();
@@ -1131,6 +1099,29 @@ function buildBySlot() {
   for (const [slot, lockedItem] of Object.entries(App.lockedSlots)) {
     if (lockedItem) bySlot[slot] = [lockedItem];
   }
+
+  // Collapse MainHand + OffHand into a pre-built combo list for the DP.
+  // This enforces the 2H constraint: if a weapon is two-handed, no off-hand is paired.
+  const mhItems = bySlot['MainHand'] || [];
+  const ohItems = bySlot['OffHand']  || [];
+  if (mhItems.length > 0 || ohItems.length > 0) {
+    delete bySlot['MainHand'];
+    delete bySlot['OffHand'];
+    const combos = [];
+    for (const mh of mhItems) {
+      if (isTwoHanded(mh)) {
+        combos.push([mh]);                  // 2H: weapon alone, no off-hand
+      } else if (ohItems.length === 0) {
+        combos.push([mh]);                  // 1H but no off-hands in pool
+      } else {
+        for (const oh of ohItems) {
+          combos.push([mh, oh]);            // 1H + off-hand
+        }
+      }
+    }
+    if (combos.length > 0) bySlot['WeaponCombo'] = combos;
+  }
+
   return bySlot;
 }
 
@@ -1418,8 +1409,11 @@ function renderResults(results, cfg) {
         const sp2 = iSP(item, cfg);    if (sp2) parts.push(`SP+${sp2}`);
         const h2  = iHaste(item, cfg); if (h2)  parts.push(`Hst+${(h2 * 100).toFixed(1)}%`);
         const t2  = iHit(item, cfg);   if (t2)  parts.push(`Hit+${(t2 * 100).toFixed(1)}%`);
+        const slotLabel = slot === 'WeaponCombo'
+          ? (isTwoHanded(item) ? 'Weapon 2H' : (combo.indexOf(item) === 0 ? 'Main Hand' : 'Off Hand'))
+          : slot;
         html += `<tr>
-          <td>${slot}</td>
+          <td>${slotLabel}</td>
           <td class="item-name-td">${esc(item.name)}</td>
           <td class="item-stat-td">${parts.join('  ')}</td>
           <td>${isWanted ? '<span class="wanted-mark">[W]</span>' : ''}</td>
@@ -1469,6 +1463,44 @@ window.unlockSlot   = unlockSlot;
 window.removeWanted = removeWanted;
 window.addWanted    = addWanted;
 
+
+function buildSetBonusUI() {
+  const grid = document.getElementById('set-bonus-grid');
+  const groups = {};
+  for (const bonus of TIER_SET_BONUSES) {
+    if (!groups[bonus.group]) groups[bonus.group] = [];
+    groups[bonus.group].push(bonus);
+  }
+  let html = '';
+  for (const [groupName, bonuses] of Object.entries(groups)) {
+    html += '<div class="set-bonus-group">';
+    html += '<div class="set-bonus-group-name">' + esc(groupName) + '</div>';
+    for (const b of bonuses) {
+      const effectKeys = Object.keys(b.effects).map(k => {
+        const v = b.effects[k];
+        if (k === 'bonusSP')          return '+' + v + ' SP';
+        if (k === 'drainMult')        return 'Drain Soul \xd7' + v;
+        if (k === 'coaMult')          return 'CoA \xd7' + v;
+        if (k === 'coaFirstTickMult') return 'CoA first 4 ticks \xd7' + v;
+        if (k === 'corruptionMult')   return 'Corruption \xd7' + v;
+        if (k === 'siphonMult')       return 'Siphon Life \xd7' + v;
+        return k + '=' + v;
+      }).join(', ');
+      html += '<div class="set-bonus-item">';
+      html += '<input type="checkbox" id="sb-' + b.id + '" data-bonus-id="' + b.id + '">';
+      html += '<div>';
+      html += '<span class="set-bonus-pieces">' + b.pieces + 'pc</span> ';
+      html += '<span class="set-bonus-desc">' + esc(b.desc) + '</span><br>';
+      html += '<span class="set-bonus-effect">sim effect: ' + effectKeys + '</span>';
+      html += '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+buildSetBonusUI();
 checkRunReady();
 autoLoadItemsDB();
 </script>
