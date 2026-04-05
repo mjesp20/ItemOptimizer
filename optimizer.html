@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warlock Gear Optimizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08080f;
+  --surface: #0f0f1a;
+  --surface2: #171726;
+  --surface3: #1e1e30;
+  --border: #252540;
+  --border2: #32325a;
+  --accent: #7c3aed;
+  --accent-bright: #a87fff;
+  --fel: #3ddc84;
+  --fel-dim: #1a3d2a;
+  --text: #dcd8f0;
+  --muted: #636084;
+  --muted2: #8885a0;
+  --red: #e05555;
+  --gold: #e0a030;
+  --blue: #5ba3e8;
+  --owned-border: #1a2535;
+  --wanted-border: #2a2010;
+  --wanted-text: #c89040;
+  --locked-bg: #1a1030;
+  --locked-border: #6030c0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  color: var(--accent-bright);
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+header .subtitle { color: var(--muted); font-size: 12px; letter-spacing: 0.05em; }
+
+nav.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  gap: 2px;
+}
+.tab-btn {
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent-bright); border-bottom-color: var(--accent-bright); }
+.tab-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  border-radius: 10px;
+  font-size: 10px;
+  padding: 0 5px;
+  margin-left: 5px;
+  vertical-align: middle;
+  font-weight: 600;
+}
+
+main { max-width: 1100px; margin: 0 auto; padding: 22px 24px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  color: var(--accent-bright);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+input[type="text"], input[type="number"], select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+input[type="checkbox"] { width: auto; accent-color: var(--accent); cursor: pointer; }
+label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+
+.field { margin-bottom: 10px; }
+.field-label {
+  display: block;
+  color: var(--muted2);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.config-row {
+  display: grid;
+  grid-template-columns: 200px 140px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.config-label { color: var(--muted2); font-size: 12px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn:hover { opacity: 0.85; }
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--accent); color: white; }
+.btn-green { background: #15803d; color: var(--fel); border: 1px solid #166534; }
+.btn-sm { padding: 3px 9px; font-size: 12px; }
+.btn-xs { padding: 2px 7px; font-size: 11px; }
+.btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--muted2); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+.btn-danger { background: #7f1d1d; color: var(--red); }
+.btn-run {
+  background: linear-gradient(135deg, #5b21b6, #7c3aed);
+  color: white;
+  padding: 12px 32px;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--accent-bright);
+  box-shadow: 0 0 20px rgba(124,58,237,0.3);
+}
+.btn-run:hover { box-shadow: 0 0 30px rgba(124,58,237,0.5); opacity: 1; }
+.btn-run:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+
+.file-drop {
+  border: 2px dashed var(--border2);
+  border-radius: 6px;
+  padding: 22px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+.file-drop:hover { border-color: var(--accent); background: rgba(124,58,237,0.04); }
+.file-drop.dragover { border-color: var(--accent-bright); background: rgba(124,58,237,0.08); }
+.file-drop.loaded { border-color: var(--fel); border-style: solid; }
+.file-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.file-drop-icon { font-size: 22px; margin-bottom: 6px; }
+.file-drop-label { color: var(--muted2); font-size: 12px; }
+.file-drop-name { color: var(--fel); font-weight: 600; font-size: 13px; margin-top: 4px; }
+.file-drop-count { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+.search-wrap { position: relative; margin-bottom: 14px; }
+.search-wrap input { padding-left: 32px; }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; pointer-events: none; }
+.search-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: var(--surface2); border: 1px solid var(--border2); border-top: none;
+  border-radius: 0 0 5px 5px; max-height: 280px; overflow-y: auto; z-index: 200; display: none;
+}
+.search-dropdown.open { display: block; }
+.search-item { display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; border-bottom: 1px solid var(--border); cursor: default; font-size: 12px; gap: 8px; }
+.search-item:hover { background: var(--surface3); }
+.search-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-item-slot { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.search-item-stats { font-family: 'Share Tech Mono', monospace; color: var(--accent-bright); font-size: 10px; white-space: nowrap; }
+.search-item-add { cursor: pointer; color: var(--fel); font-size: 14px; padding: 2px 6px; border-radius: 3px; }
+.search-item-add:hover { background: var(--fel-dim); }
+.search-empty { padding: 12px; text-align: center; color: var(--muted); font-size: 12px; }
+.search-hint { padding: 8px 12px; color: var(--muted); font-size: 11px; border-bottom: 1px solid var(--border); }
+
+.slots-grid { display: flex; flex-direction: column; gap: 2px; }
+.slot-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 4px; border: 1px solid transparent; transition: border-color 0.15s; }
+.slot-row:hover { border-color: var(--border); background: rgba(255,255,255,0.01); }
+.slot-row.has-lock { border-color: var(--locked-border); background: rgba(96,48,192,0.05); }
+.slot-name-col { font-family: 'Cinzel', serif; font-size: 11px; color: var(--accent-bright); letter-spacing: 0.06em; min-width: 82px; padding-top: 3px; }
+.slot-name-col.dual { color: var(--gold); }
+.slot-items-col { flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.slot-lock-col { min-width: 120px; padding-top: 2px; }
+
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 4px; font-size: 12px; max-width: 240px; border: 1px solid var(--owned-border); background: rgba(26,37,53,0.4); cursor: default; }
+.chip.wanted { border-color: var(--wanted-border); background: rgba(42,32,16,0.4); }
+.chip.wanted .chip-name { color: var(--wanted-text); }
+.chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+.chip-stats { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--accent-bright); white-space: nowrap; }
+.chip-del { color: var(--muted); cursor: pointer; font-size: 13px; line-height: 1; }
+.chip-del:hover { color: var(--red); }
+.chip-lock { cursor: pointer; font-size: 11px; color: var(--muted); }
+.chip-lock:hover { color: var(--accent-bright); }
+
+.lock-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--locked-bg); border: 1px solid var(--locked-border); border-radius: 4px; padding: 3px 8px; font-size: 12px; max-width: 220px; }
+.lock-badge-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; color: var(--accent-bright); }
+.lock-badge-icon { font-size: 11px; }
+.lock-badge-del { cursor: pointer; color: var(--muted); font-size: 13px; }
+.lock-badge-del:hover { color: var(--red); }
+
+.empty-slot { color: var(--muted); font-size: 12px; font-style: italic; }
+
+.log-box { background: #030308; border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted); height: 180px; overflow-y: auto; margin-bottom: 14px; }
+.log-line { padding: 1px 0; }
+.log-line.ok { color: var(--fel); }
+.log-line.err { color: var(--red); }
+.log-line.info { color: var(--blue); }
+
+.result-set { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 10px; }
+.result-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+.result-rank { font-family: 'Cinzel', serif; color: var(--gold); font-size: 15px; min-width: 30px; }
+.result-dps { font-family: 'Share Tech Mono', monospace; font-size: 17px; color: var(--fel); font-weight: bold; }
+.result-dps-label { color: var(--muted); font-size: 11px; }
+.result-meta { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted2); display: flex; gap: 14px; flex-wrap: wrap; }
+.result-meta .val { color: var(--text); }
+.result-meta .hit-ok { color: var(--fel); }
+.result-meta .hit-bad { color: var(--red); }
+
+.result-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+.result-table td { padding: 3px 6px; }
+.result-table td:first-child { color: var(--muted); width: 86px; font-size: 11px; text-align: right; padding-right: 10px; }
+.result-table .item-name-td { color: var(--text); }
+.result-table .item-stat-td { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--accent-bright); }
+.result-table .wanted-mark { color: var(--wanted-text); font-size: 10px; }
+.result-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.breakdown-row { display: flex; gap: 14px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted); }
+.breakdown-row .spell-pct { color: var(--text); }
+
+.stat-weights-box { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.sw-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 6px 12px; font-family: 'Share Tech Mono', monospace; font-size: 12px; }
+.sw-chip .sw-val { color: var(--fel); }
+.sw-chip .sw-label { color: var(--muted); font-size: 10px; }
+
+/* ── SET BONUSES UI ── */
+.set-bonus-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.set-bonus-group {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 10px 12px;
+}
+.set-bonus-group-name {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  color: var(--accent-bright);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.set-bonus-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.set-bonus-item:last-child { margin-bottom: 0; }
+.set-bonus-item input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
+.set-bonus-pieces {
+  display: inline-block;
+  background: var(--locked-bg);
+  border: 1px solid var(--locked-border);
+  border-radius: 3px;
+  padding: 0 5px;
+  font-size: 10px;
+  color: var(--accent-bright);
+  font-family: 'Share Tech Mono', monospace;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.set-bonus-desc { color: var(--text); }
+.set-bonus-effect { color: var(--fel); font-size: 11px; font-family: 'Share Tech Mono', monospace; }
+
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mb-8 { margin-bottom: 8px; }
+.text-muted { color: var(--muted); }
+.text-small { font-size: 12px; }
+.text-green { color: var(--fel); }
+.text-gold { color: var(--gold); }
+.text-red { color: var(--red); }
+.text-purple { color: var(--accent-bright); }
+.font-mono { font-family: 'Share Tech Mono', monospace; }
+.justify-between { justify-content: space-between; }
+.items-center { align-items: center; }
+.note { color: var(--muted); font-size: 11px; line-height: 1.6; }
+
+.badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }
+.badge-green { background: var(--fel-dim); color: var(--fel); }
+.badge-red { background: #3f0a0a; color: var(--red); }
+.badge-purple { background: #2e1065; color: var(--accent-bright); }
+.badge-gold { background: #3a2800; color: var(--gold); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+@media (max-width: 700px) {
+  .grid-2, .grid-3, .set-bonus-grid { grid-template-columns: 1fr; }
+  .config-row { grid-template-columns: 1fr 100px; }
+  .slot-row { flex-wrap: wrap; }
+  .slot-lock-col { min-width: auto; }
+}
+
+/* DB auto-load status bar */
+.db-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  font-size: 12px;
+  margin-bottom: 10px;
+  color: var(--muted2);
+}
+.db-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.db-status-bar.loaded .db-dot { background: var(--fel); box-shadow: 0 0 6px var(--fel); }
+.db-status-bar.loaded { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚗ Warlock Gear Optimizer</h1>
+  <span class="subtitle">Classic WoW · Drain Soul Rotation · DP Optimizer</span>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="setup">Setup</button>
+  <button class="tab-btn" data-tab="items">Items <span class="tab-badge" id="badge-items">0</span></button>
+  <button class="tab-btn" data-tab="config">Config</button>
+  <button class="tab-btn" data-tab="run">Run &amp; Results</button>
+</nav>
+
+<main>
+
+<!-- ═══ SETUP TAB ═══ -->
+<div class="tab-panel active" id="tab-setup">
+
+  <div class="card">
+    <div class="card-title">Item Database (items.json)</div>
+    <div class="db-status-bar" id="db-status-bar">
+      <div class="db-dot" id="db-dot"></div>
+      <span id="db-status-text">Looking for items.json…</span>
+    </div>
+    <!-- shown only when auto-fetch fails (e.g. local file://) -->
+    <div id="db-fallback" style="display:none">
+      <div class="file-drop" id="drop-db">
+        <input type="file" accept=".json,.txt" id="file-db">
+        <div class="file-drop-icon">📦</div>
+        <div class="file-drop-label">Drop items.json here or click to browse</div>
+        <div class="file-drop-name" id="db-name" style="display:none"></div>
+        <div class="file-drop-count" id="db-count"></div>
+      </div>
+      <p class="note mt-12">Expected: <code style="color:var(--accent-bright)">{"items":[{"id":…,"name":…,"type":…,"stats":[…]}]}</code></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Owned Items (your character scan)</div>
+    <div class="file-drop" id="drop-owned">
+      <input type="file" accept=".json,.txt" id="file-owned">
+      <div class="file-drop-icon">🎒</div>
+      <div class="file-drop-label">Drop your owned items JSON here or click to browse</div>
+      <div class="file-drop-name" id="owned-name" style="display:none"></div>
+      <div class="file-drop-count" id="owned-count"></div>
+    </div>
+    <p class="note mt-12">Expected: <code style="color:var(--accent-bright)">{"items":[1234,5678,…]}</code> — array of item IDs</p>
+  </div>
+
+  <div class="card" id="setup-summary" style="display:none">
+    <div class="card-title">Summary</div>
+    <div id="summary-content" class="font-mono text-small"></div>
+  </div>
+</div>
+
+<!-- ═══ ITEMS TAB ═══ -->
+<div class="tab-panel" id="tab-items">
+
+  <div class="card">
+    <div class="card-title">Search &amp; Add Wanted Items</div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search items by name… (requires DB loaded)" disabled>
+      <div class="search-dropdown" id="search-dropdown">
+        <div class="search-hint">Showing top matches from database · click + to add to Wanted</div>
+        <div id="search-results-list"></div>
+      </div>
+    </div>
+    <p class="note"><span class="badge badge-gold">WANTED</span> Items you don't own yet but want to plan around.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Slots · Owned &amp; Wanted · Lock Controls</div>
+    <p class="note mb-8">
+      <span class="badge badge-purple">LOCK</span> Click 🔒 on any item to lock it into that slot — the optimizer will use only that item for the slot.<br>
+      <span class="badge badge-green">DUAL</span> Finger &amp; Trinket slots accept 2 items — optimizer picks the best pair from your pool.
+    </p>
+    <hr class="divider">
+    <div class="slots-grid" id="slots-grid">
+      <div class="empty-slot" style="padding:12px">Load your owned items file first.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONFIG TAB ═══ -->
+<div class="tab-panel" id="tab-config">
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Talents</div>
+      <div class="config-row">
+        <span class="config-label">Improved Drains (0–2)</span>
+        <input type="number" id="t-improved_drains" min="0" max="2" value="2">
+      </div>
+      <div class="config-row">
+        <span class="config-label">Shadow Mastery (0–5)</span>
+        <input type="number" id="t-shadow_mastery" min="0" max="5" value="5">
+      </div>
+      <div class="config-row">
+        <span class="config-label">Soul Entrapment (0–3)</span>
+        <input type="number" id="t-soul_entrapment" min="0" max="3" value="3">
+      </div>
+      <div class="config-row">
+        <span class="config-label">Burning Wish (0–1)</span>
+        <input type="number" id="t-burning_wish" min="0" max="1" value="1">
+      </div>
+      <div class="config-row">
+        <span class="config-label">Improved CoA (0–3)</span>
+        <input type="number" id="t-improved_coa" min="0" max="3" value="3">
+      </div>
+      <div class="config-row">
+        <span class="config-label">Soul Siphon (0–3)</span>
+        <input type="number" id="t-soul_siphon" min="0" max="3" value="3">
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title">Debuffs on Target</div>
+        <label style="margin-bottom:8px"><input type="checkbox" id="d-shadow_weaving" checked> Shadow Weaving (+15%)</label>
+        <label style="margin-bottom:8px"><input type="checkbox" id="d-shadow_vulnerability" checked> Shadow Vulnerability (+20%)</label>
+        <label><input type="checkbox" id="d-curse_of_shadows" checked> Curse of Shadows (+10%)</label>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Base Stats (pre-gear)</div>
+        <div class="config-row">
+          <span class="config-label">Base Spell Power</span>
+          <input type="number" id="cfg-BASE_SP" value="0" min="0">
+        </div>
+        <div class="config-row">
+          <span class="config-label">Base Haste (%)</span>
+          <input type="number" id="cfg-BASE_HASTE_PCT" value="6" min="0" step="0.1">
+        </div>
+        <div class="config-row">
+          <span class="config-label">Hit from Talents+Buffs (%)</span>
+          <input type="number" id="cfg-HIT_FROM_TB_PCT" value="11" min="0" step="0.5">
+        </div>
+        <div class="config-row">
+          <span class="config-label">Total Hit Cap (%)</span>
+          <input type="number" id="cfg-TOTAL_HIT_CAP_PCT" value="16" min="0" step="0.5">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Optimizer Settings</div>
+        <div class="config-row">
+          <span class="config-label">Sim Duration (seconds)</span>
+          <input type="number" id="cfg-SIM_DURATION" value="36000" min="60">
+        </div>
+        <div class="config-row">
+          <span class="config-label">Top N Results</span>
+          <input type="number" id="cfg-TOP_N" value="5" min="1" max="20">
+        </div>
+        <div class="config-row">
+          <span class="config-label">Haste Divisor</span>
+          <select id="cfg-HASTE_DIVISOR">
+            <option value="100" selected>100 (e.g. "1" = 1%)</option>
+            <option value="1">1 (e.g. "0.01" = 1%)</option>
+          </select>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Hit Divisor</span>
+          <select id="cfg-SPELL_HIT_DIVISOR">
+            <option value="100" selected>100 (e.g. "1" = 1%)</option>
+            <option value="1">1 (e.g. "0.01" = 1%)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SET BONUSES ── -->
+  <div class="card">
+    <div class="card-title">Tier Set Bonuses</div>
+    <p class="note mb-8">
+      Select the set bonuses you have active. Only bonuses with <strong style="color:var(--text)">guaranteed always-active stat effects</strong> are listed here — proc-based bonuses (chance to deal damage, chance to grant a buff, etc.) are excluded from the sim.
+    </p>
+    <div class="set-bonus-grid" id="set-bonus-grid">
+      <!-- populated by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RUN TAB ═══ -->
+<div class="tab-panel" id="tab-run">
+  <div class="card">
+    <div class="card-title">Run Optimizer</div>
+    <div class="flex gap-12 items-center mb-8">
+      <button class="btn btn-run" id="btn-run" disabled>▶ Run Optimizer</button>
+      <div id="run-status" class="text-muted text-small">Load items to enable.</div>
+    </div>
+    <p class="note">The optimizer uses dynamic programming with Pareto pruning — exact results without exhaustive enumeration. Runs in a background thread.</p>
+  </div>
+
+  <div id="stat-weights-section" style="display:none">
+    <div class="card">
+      <div class="card-title">Stat Weights (at base stats)</div>
+      <div class="stat-weights-box" id="stat-weights-box"></div>
+    </div>
+  </div>
+
+  <div class="card" style="display:none" id="log-card">
+    <div class="card-title">Progress</div>
+    <div class="log-box" id="log-box"></div>
+  </div>
+
+  <div id="results-section"></div>
+</div>
+
+</main>
+
+<!-- ═══ TIER SET BONUS DEFINITIONS ═══ -->
+<script>
+// Only always-active, non-proc stat effects are listed.
+// Effects map:
+//   bonusSP          — flat spell power added to total SP going into sim
+//   drainMult        — multiplier on each Drain Soul tick
+//   coaMult          — multiplier on all CoA ticks
+//   coaFirstTickMult — additional multiplier on the first 4 CoA ticks (stacks with coaMult)
+//   corruptionMult   — multiplier on all Corruption ticks
+//   siphonMult       — multiplier on all Siphon Life ticks
+const TIER_SET_BONUSES = [
+  {
+    id: 'felheart_affli_3pc',
+    group: 'Felheart (Affliction Alt — ID 677)',
+    pieces: 3,
+    desc: 'Drain Soul damage +5%',
+    effects: { drainMult: 1.05 }
+  },
+  {
+    id: 'nemesis_normal_3pc',
+    group: 'Nemesis (Normal — ID 212)',
+    pieces: 3,
+    desc: '+23 Spell Power to magical spells and effects',
+    effects: { bonusSP: 23 }
+  },
+  {
+    id: 'doomcaller_affli_3pc',
+    group: 'Doomcaller (Affliction Alt — ID 679)',
+    pieces: 3,
+    desc: 'Curse of Agony damage +5%',
+    effects: { coaMult: 1.05 }
+  },
+  {
+    id: 'plagueheart_normal_4pc',
+    group: 'Plagueheart (Normal — ID 529)',
+    pieces: 4,
+    desc: 'Corruption damage +12%',
+    effects: { corruptionMult: 1.12 }
+  },
+  {
+    id: 'plagueheart_affli_4pc',
+    group: 'Plagueheart (Affliction Alt — ID 680)',
+    pieces: 4,
+    desc: 'Curse of Agony deals +100% damage for the first 4 ticks',
+    effects: { coaFirstTickMult: 2.0 }
+  },
+  {
+    id: 'nathrezim_affli_3pc',
+    group: 'Nathrezim (Affliction Alt)',
+    pieces: 3,
+    desc: 'Siphon Life health drained +25%',
+    effects: { siphonMult: 1.25 }
+  },
+];
+
+// Render the set bonus UI
+(function buildSetBonusUI() {
+  const grid = document.getElementById('set-bonus-grid');
+  // Group by 'group' field
+  const groups = {};
+  for (const bonus of TIER_SET_BONUSES) {
+    if (!groups[bonus.group]) groups[bonus.group] = [];
+    groups[bonus.group].push(bonus);
+  }
+  let html = '';
+  for (const [groupName, bonuses] of Object.entries(groups)) {
+    html += `<div class="set-bonus-group">`;
+    html += `<div class="set-bonus-group-name">${esc(groupName)}</div>`;
+    for (const b of bonuses) {
+      const effectKeys = Object.keys(b.effects).map(k => {
+        const v = b.effects[k];
+        if (k === 'bonusSP')          return `+${v} SP`;
+        if (k === 'drainMult')        return `Drain Soul ×${v}`;
+        if (k === 'coaMult')          return `CoA ×${v}`;
+        if (k === 'coaFirstTickMult') return `CoA first 4 ticks ×${v}`;
+        if (k === 'corruptionMult')   return `Corruption ×${v}`;
+        if (k === 'siphonMult')       return `Siphon Life ×${v}`;
+        return `${k}=${v}`;
+      }).join(', ');
+
+      html += `<div class="set-bonus-item">`;
+      html += `<input type="checkbox" id="sb-${b.id}" data-bonus-id="${b.id}">`;
+      html += `<div>`;
+      html += `<span class="set-bonus-pieces">${b.pieces}pc</span> `;
+      html += `<span class="set-bonus-desc">${esc(b.desc)}</span><br>`;
+      html += `<span class="set-bonus-effect">sim effect: ${effectKeys}</span>`;
+      html += `</div>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+  grid.innerHTML = html;
+})();
+
+function getActiveSetBonuses() {
+  const active = {};
+  for (const bonus of TIER_SET_BONUSES) {
+    const el = document.getElementById('sb-' + bonus.id);
+    if (el && el.checked) {
+      for (const [key, val] of Object.entries(bonus.effects)) {
+        if (key === 'bonusSP') {
+          active[key] = (active[key] || 0) + val;
+        } else {
+          // Multiplicative stacking
+          active[key] = (active[key] || 1) * val;
+        }
+      }
+    }
+  }
+  return active;
+}
+</script>
+
+<!-- ═══ SIM WORKER (embedded) ═══ -->
+<script id="sim-worker-src" type="text/js-worker">
+const STAT_SP = 5, STAT_SHADOW_SP = 11, STAT_SPELL_HIT = 13, STAT_SPELL_HASTE = 15;
+const DUAL_SLOTS = new Set(['Finger', 'Trinket']);
+let CFG = {};
+
+function _stat(item, idx) { const s = item.stats || []; return idx < s.length ? s[idx] : 0; }
+function itemSP(item)    { return _stat(item, STAT_SP) + _stat(item, STAT_SHADOW_SP); }
+function itemHaste(item) { return _stat(item, STAT_SPELL_HASTE) / CFG.HASTE_DIVISOR; }
+function itemHit(item)   { return _stat(item, STAT_SPELL_HIT) / CFG.SPELL_HIT_DIVISOR; }
+
+function globalMult() {
+  let m = 1;
+  m *= 1 + 0.02 * CFG.TALENTS.shadow_mastery;
+  m *= 1 + 0.02 * CFG.TALENTS.soul_entrapment;
+  m *= 1 + 0.04 * CFG.TALENTS.burning_wish;
+  if (CFG.DEBUFFS.shadow_weaving)       m *= 1.15;
+  if (CFG.DEBUFFS.shadow_vulnerability) m *= 1.20;
+  if (CFG.DEBUFFS.curse_of_shadows)     m *= 1.10;
+  return m;
+}
+function coaMult() { return 1 + [0, 0.03, 0.06, 0.10][CFG.TALENTS.improved_coa]; }
+
+function drainTickMult(state) {
+  let m = 1;
+  m *= 1 + 0.05 * CFG.TALENTS.improved_drains;
+  m *= CFG.SET_BONUSES.drainMult || 1;
+  m *= 1 + (0.02 * CFG.TALENTS.soul_siphon) * (state.dots.length + 1);
+  return m;
+}
+
+function mkCorruption(t, hm) { const ti = 3 / hm; return { name: 'corruption', expires_at: t + ti * 6,  next_tick: t + ti, tick_interval: ti }; }
+function mkSiphon(t, hm)     { const ti = 3 / hm; return { name: 'siphon',     expires_at: t + ti * 10, next_tick: t + ti, tick_interval: ti }; }
+function mkCoa(t, hm)        { const ti = 2 / hm; return { name: 'coa',        expires_at: t + ti * 12, next_tick: t + ti, tick_interval: ti, tick_index: 0 }; }
+
+function dotDmg(dot, sp, gm) {
+  const sb = CFG.SET_BONUSES;
+  if (dot.name === 'corruption') {
+    return (137 + sp / 6) * gm * (sb.corruptionMult || 1);
+  }
+  if (dot.name === 'siphon') {
+    return (45 + sp / 10) * gm * (sb.siphonMult || 1);
+  }
+  if (dot.name === 'coa') {
+    const i = dot.tick_index;
+    const base = i < 4 ? 52 : (i < 8 ? 87 : 122);
+    const firstMult = (i < 4) ? (sb.coaFirstTickMult || 1) : 1;
+    return (base + sp / 12) * coaMult() * gm * (sb.coaMult || 1) * firstMult;
+  }
+  return 0;
+}
+
+function hasDot(state, name) { return state.dots.some(d => d.name === name); }
+function pickAction(state) {
+  if (!hasDot(state, 'coa'))        return 'coa';
+  if (!hasDot(state, 'corruption')) return 'corruption';
+  if (!hasDot(state, 'siphon'))     return 'siphon';
+  return 'drain';
+}
+
+function simulate(duration, sp, haste) {
+  if (sp === undefined)    sp    = CFG.BASE_SP;
+  if (haste === undefined) haste = CFG.BASE_HASTE;
+
+  // Apply flat SP bonuses from set bonuses
+  const effectiveSP = sp + (CFG.SET_BONUSES.bonusSP || 0);
+
+  const hm = 1 + haste, gm = globalMult();
+  const state = { time: 0, dots: [], gcd_ready: 0, channeling: null, damage_done: 0 };
+  const bd = { corruption: 0, siphon: 0, coa: 0, drain: 0 };
+
+  while (state.time < duration) {
+    if (state.time >= state.gcd_ready && state.channeling === null) {
+      const a = pickAction(state);
+      if (a === 'coa')             { state.dots.push(mkCoa(state.time, hm));         state.gcd_ready = state.time + 1.5; }
+      else if (a === 'corruption') { state.dots.push(mkCorruption(state.time, hm));  state.gcd_ready = state.time + 1.5; }
+      else if (a === 'siphon')     { state.dots.push(mkSiphon(state.time, hm));      state.gcd_ready = state.time + 1.5; }
+      else {
+        const ti = 1 / hm;
+        state.channeling = { end_time: state.time + ti * 6, next_tick: state.time + ti, tick_interval: ti };
+      }
+      continue;
+    }
+
+    const times = [];
+    for (const d of state.dots) {
+      if (d.next_tick  > state.time) times.push(d.next_tick);
+      if (d.expires_at > state.time) times.push(d.expires_at);
+    }
+    if (state.channeling) {
+      if (state.channeling.next_tick > state.time) times.push(state.channeling.next_tick);
+      if (state.channeling.end_time  > state.time) times.push(state.channeling.end_time);
+    }
+    if (state.gcd_ready > state.time) times.push(state.gcd_ready);
+    if (!times.length) break;
+
+    state.time = Math.min(...times);
+    state.dots = state.dots.filter(d => d.expires_at > state.time);
+
+    for (const d of state.dots) {
+      if (Math.abs(d.next_tick - state.time) < 1e-9) {
+        const dmg = dotDmg(d, effectiveSP, gm);
+        state.damage_done += dmg;
+        bd[d.name] += dmg;
+        d.next_tick += d.tick_interval;
+        if (d.name === 'coa') d.tick_index++;
+      }
+    }
+    if (state.channeling) {
+      if (Math.abs(state.channeling.next_tick - state.time) < 1e-9) {
+        const dmg = (159 + 0.2 * effectiveSP) * gm * drainTickMult(state);
+        state.damage_done += dmg;
+        bd.drain += dmg;
+        state.channeling.next_tick += state.channeling.tick_interval;
+      }
+      if (Math.abs(state.channeling.end_time - state.time) < 1e-9) state.channeling = null;
+    }
+  }
+  return { dps: state.damage_done / duration, breakdown: bd };
+}
+
+// ── PARETO PRUNE ── (3-dimensional: sp, haste, hit)
+function paretoPrune(states, hitCap) {
+  if (!states.length) return [];
+  const effH = h => Math.min(h, hitCap);
+
+  states.sort((a, b) => {
+    if (b[0] !== a[0]) return b[0] - a[0];
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return effH(b[2]) - effH(a[2]);
+  });
+
+  const kept = [];
+  outer: for (const c of states) {
+    const ec = effH(c[2]);
+    for (const k of kept)
+      if (k[0] >= c[0] && k[1] >= c[1] && effH(k[2]) >= ec) continue outer;
+    for (let i = kept.length - 1; i >= 0; i--) {
+      const k = kept[i];
+      if (c[0] >= k[0] && c[1] >= k[1] && ec >= effH(k[2])) kept.splice(i, 1);
+    }
+    kept.push(c);
+  }
+  return kept;
+}
+
+// ── DP OPTIMIZER ──
+function findBestGearDP(bySlot) {
+  const HIT_CAP = CFG.TOTAL_HIT_CAP - CFG.HIT_FROM_TALENTS_AND_BUFFS;
+  const duration = CFG.SIM_DURATION, topN = CFG.TOP_N;
+  const slotNames = Object.keys(bySlot).sort();
+
+  const slotChoices = [];
+  for (const slot of slotNames) {
+    const items = bySlot[slot];
+    if (DUAL_SLOTS.has(slot) && items.length >= 2) {
+      const combos = [];
+      for (let i = 0; i < items.length; i++)
+        for (let j = i + 1; j < items.length; j++)
+          combos.push([items[i], items[j]]);
+      slotChoices.push(combos);
+    } else {
+      slotChoices.push(items.map(x => [x]));
+    }
+  }
+
+  const totalOpts = slotChoices.reduce((a, c) => a + c.length, 0);
+  log(`  Slots   : ${slotNames.length}`);
+  log(`  Options : ${totalOpts} total item options across all slots`);
+  log('  Running DP with Pareto pruning…');
+
+  const sc = new Map();
+  function getStats(item) {
+    if (!sc.has(item.id)) sc.set(item.id, [itemSP(item), itemHaste(item), itemHit(item)]);
+    return sc.get(item.id);
+  }
+
+  // frontier: [sp, haste, hit, assigned[]]
+  let frontier = [[0, 0, 0, []]];
+
+  for (let si = 0; si < slotChoices.length; si++) {
+    const choices = slotChoices[si];
+    const expanded = [];
+    for (const [sp, h, hit, asgn] of frontier) {
+      for (const combo of choices) {
+        let ds = 0, dh = 0, dt = 0;
+        for (const item of combo) { const [s, hh, t] = getStats(item); ds += s; dh += hh; dt += t; }
+        expanded.push([sp + ds, h + dh, hit + dt, [...asgn, combo]]);
+      }
+    }
+    frontier = paretoPrune(expanded, HIT_CAP);
+    log(`    slot ${String(si + 1).padStart(2)}/${slotNames.length}  (${slotNames[si].padEnd(12)})  candidates: ${String(expanded.length).padStart(5)}  →  frontier: ${frontier.length}`);
+  }
+
+  const simCache = new Map();
+  const results = [];
+
+  for (const [sp, h, hit, asgn] of frontier) {
+    if (hit < HIT_CAP - 1e-9) continue;
+
+    const tsp = CFG.BASE_SP + sp, thaste = CFG.BASE_HASTE + h;
+    const key = `${tsp}|${thaste.toFixed(8)}`;
+    if (!simCache.has(key)) simCache.set(key, simulate(duration, tsp, thaste));
+    const { dps, breakdown } = simCache.get(key);
+
+    results.push({ dps, sp: tsp, haste: thaste, hit, breakdown, assigned: asgn, slotNames });
+  }
+
+  results.sort((a, b) => b.dps - a.dps);
+  log(`\n  Done — ${simCache.size} unique simulations run`);
+  return results.slice(0, topN);
+}
+
+// ── STAT WEIGHTS ──
+function computeStatWeights() {
+  const sp = CFG.BASE_SP, h = CFG.BASE_HASTE, d = CFG.SIM_DURATION;
+  const base = simulate(d, sp, h).dps;
+  const sp1  = simulate(d, sp + 1, h).dps;
+  const h1   = simulate(d, sp, h + 0.01).dps;
+  return { perSP: sp1 - base, perHaste: h1 - base, equiv: (h1 - base) / (sp1 - base || 1), baseDPS: base };
+}
+
+function log(msg) { self.postMessage({ type: 'log', msg }); }
+
+self.onmessage = function(e) {
+  const { type, config, bySlot } = e.data;
+  CFG = config;
+  if (type === 'statweights') {
+    self.postMessage({ type: 'statweights', weights: computeStatWeights() });
+    return;
+  }
+  if (type === 'optimize') {
+    try {
+      log('Computing stat weights…');
+      const w = computeStatWeights();
+      self.postMessage({ type: 'statweights', weights: w });
+      log(`  Base DPS: ${w.baseDPS.toFixed(2)}  |  +1 SP → +${w.perSP.toFixed(4)} DPS  |  +1% Haste → +${w.perHaste.toFixed(4)} DPS  (≈${w.equiv.toFixed(1)} SP)`);
+      if (Math.abs(w.equiv) < 1) log('  !! Haste equiv looks too low — try flipping Haste Divisor in Config');
+      log('');
+      const results = findBestGearDP(bySlot);
+      if (!results.length) self.postMessage({ type: 'no_results' });
+      else self.postMessage({ type: 'results', results });
+    } catch (err) {
+      self.postMessage({ type: 'error', message: err.message + '\n' + err.stack });
+    }
+  }
+};
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════
+const TYPE_TO_SLOT = {
+  1:'Head',2:'Neck',3:'Shoulder',4:'Back',5:'Chest',6:'Wrist',
+  7:'Hands',8:'Waist',9:'Legs',10:'Feet',11:'Finger',12:'Trinket',
+  13:'Weapon',14:'Ranged'
+};
+const SLOT_ORDER = ['Head','Neck','Shoulder','Back','Chest','Wrist','Hands','Waist','Legs','Feet','Finger','Trinket','Weapon','Ranged'];
+const DUAL_SLOTS = new Set(['Finger','Trinket']);
+const STAT_SP=5, STAT_SHADOW_SP=11, STAT_SPELL_HIT=13, STAT_SPELL_HASTE=15;
+
+const App = {
+  itemsDB: new Map(),
+  ownedIds: new Set(),
+  wantedIds: new Set(),
+  lockedSlots: {},
+  worker: null,
+  running: false,
+};
+
+function getConfig() {
+  return {
+    BASE_SP: +document.getElementById('cfg-BASE_SP').value || 0,
+    BASE_HASTE: (+document.getElementById('cfg-BASE_HASTE_PCT').value || 6) / 100,
+    HASTE_DIVISOR: +document.getElementById('cfg-HASTE_DIVISOR').value || 100,
+    SPELL_HIT_DIVISOR: +document.getElementById('cfg-SPELL_HIT_DIVISOR').value || 100,
+    HIT_FROM_TALENTS_AND_BUFFS: (+document.getElementById('cfg-HIT_FROM_TB_PCT').value || 11) / 100,
+    TOTAL_HIT_CAP: (+document.getElementById('cfg-TOTAL_HIT_CAP_PCT').value || 16) / 100,
+    SIM_DURATION: +document.getElementById('cfg-SIM_DURATION').value || 36000,
+    TOP_N: +document.getElementById('cfg-TOP_N').value || 5,
+    TALENTS: {
+      improved_drains: +document.getElementById('t-improved_drains').value,
+      shadow_mastery:  +document.getElementById('t-shadow_mastery').value,
+      soul_entrapment: +document.getElementById('t-soul_entrapment').value,
+      burning_wish:    +document.getElementById('t-burning_wish').value,
+      improved_coa:    +document.getElementById('t-improved_coa').value,
+      soul_siphon:     +document.getElementById('t-soul_siphon').value,
+    },
+    DEBUFFS: {
+      shadow_weaving:       document.getElementById('d-shadow_weaving').checked,
+      shadow_vulnerability: document.getElementById('d-shadow_vulnerability').checked,
+      curse_of_shadows:     document.getElementById('d-curse_of_shadows').checked,
+    },
+    SET_BONUSES: getActiveSetBonuses(),
+  };
+}
+
+// ═══════════════════════════════════════════════════
+// STAT HELPERS (client-side, for display only)
+// ═══════════════════════════════════════════════════
+function _stat(item, idx) { const s = item.stats || []; return idx < s.length ? s[idx] : 0; }
+function iSP(item, cfg)    { return _stat(item, STAT_SP) + _stat(item, STAT_SHADOW_SP); }
+function iHaste(item, cfg) { return _stat(item, STAT_SPELL_HASTE) / (cfg ? cfg.HASTE_DIVISOR : 100); }
+function iHit(item, cfg)   { return _stat(item, STAT_SPELL_HIT) / (cfg ? cfg.SPELL_HIT_DIVISOR : 100); }
+
+function itemStatStr(item) {
+  const cfg = getConfig();
+  const parts = [];
+  const sp = iSP(item, cfg);  if (sp) parts.push(`SP+${sp}`);
+  const h  = iHaste(item, cfg); if (h)  parts.push(`Hst+${(h*100).toFixed(1)}%`);
+  const t  = iHit(item, cfg);   if (t)  parts.push(`Hit+${(t*100).toFixed(1)}%`);
+  return parts.join(' ');
+}
+
+function onDBLoaded(data, name) {
+  if (!data.items || !Array.isArray(data.items)) return alert('Expected {"items":[...]} in DB file');
+  App.itemsDB.clear();
+  for (const item of data.items) App.itemsDB.set(item.id, item);
+
+  // Update status bar
+  const bar = document.getElementById('db-status-bar');
+  bar.classList.add('loaded');
+  document.getElementById('db-status-text').textContent = `${name} — ${App.itemsDB.size.toLocaleString()} items loaded`;
+
+  // If the fallback drop was shown, mark it done too
+  const el = document.getElementById('drop-db');
+  if (el) el.classList.add('loaded');
+  const nameEl = document.getElementById('db-name');
+  if (nameEl) { nameEl.textContent = name; nameEl.style.display = 'block'; }
+  const countEl = document.getElementById('db-count');
+  if (countEl) countEl.textContent = `${App.itemsDB.size.toLocaleString()} items loaded`;
+
+  document.getElementById('search-input').disabled = false;
+  updateAll();
+}
+
+// Try fetch first (works on GitHub Pages / any HTTP server).
+// Falls back to manual file drop for local file:// usage.
+async function autoLoadItemsDB() {
+  try {
+    const resp = await fetch('items.json');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    onDBLoaded(data, 'items.json');
+  } catch(e) {
+    // fetch failed — show manual drop and explain why
+    document.getElementById('db-status-text').textContent =
+      'Auto-load unavailable locally — please drop items.json below';
+    document.getElementById('db-fallback').style.display = 'block';
+    setupFileDrop('drop-db', 'file-db', onDBLoaded);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// OWNED FILE LOADING
+// ═══════════════════════════════════════════════════
+function setupFileDrop(dropId, inputId, onLoad) {
+  const drop  = document.getElementById(dropId);
+  const input = document.getElementById(inputId);
+  input.addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0], onLoad); });
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0], onLoad);
+  });
+}
+
+function readFile(file, cb) {
+  const r = new FileReader();
+  r.onload = e => { try { cb(JSON.parse(e.target.result), file.name); } catch(ex) { alert('JSON parse error: ' + ex.message); } };
+  r.readAsText(file);
+}
+
+function onOwnedLoaded(data, name) {
+  let ids = [];
+  if (Array.isArray(data.items)) ids = data.items;
+  else if (Array.isArray(data))  ids = data;
+  else return alert('Expected {"items":[id1,id2,...]} in owned file');
+
+  App.ownedIds = new Set(ids.map(Number));
+  for (const id of App.ownedIds) App.wantedIds.delete(id);
+  for (const slot of Object.keys(App.lockedSlots)) {
+    const locked = App.lockedSlots[slot];
+    if (locked && !App.ownedIds.has(locked.id) && !App.wantedIds.has(locked.id))
+      delete App.lockedSlots[slot];
+  }
+
+  const el = document.getElementById('drop-owned');
+  el.classList.add('loaded');
+  document.getElementById('owned-name').textContent = name;
+  document.getElementById('owned-name').style.display = 'block';
+
+  const known = [...App.ownedIds].filter(id => App.itemsDB.has(id)).length;
+  const miss  = App.ownedIds.size - known;
+  document.getElementById('owned-count').textContent =
+    `${App.ownedIds.size} IDs · ${known} matched in DB${miss ? ` · ${miss} not found` : ''}`;
+
+  updateAll();
+}
+
+// ═══════════════════════════════════════════════════
+// BUILD BY-SLOT MAP
+// ═══════════════════════════════════════════════════
+function buildBySlot() {
+  const bySlot = {};
+  const allIds = new Set([...App.ownedIds, ...App.wantedIds]);
+  for (const id of allIds) {
+    const item = App.itemsDB.get(id); if (!item) continue;
+    const slot = TYPE_TO_SLOT[item.type]; if (!slot) continue;
+    bySlot[slot] = bySlot[slot] || [];
+    bySlot[slot].push(item);
+  }
+  for (const [slot, lockedItem] of Object.entries(App.lockedSlots)) {
+    if (lockedItem) bySlot[slot] = [lockedItem];
+  }
+  return bySlot;
+}
+
+// ═══════════════════════════════════════════════════
+// SLOTS UI
+// ═══════════════════════════════════════════════════
+function renderSlots() {
+  const grid = document.getElementById('slots-grid');
+  if (App.ownedIds.size === 0 && App.wantedIds.size === 0) {
+    grid.innerHTML = '<div class="empty-slot" style="padding:12px">Load your owned items file first.</div>';
+    return;
+  }
+
+  const perSlot = {};
+  for (const slot of SLOT_ORDER) perSlot[slot] = { owned: [], wanted: [] };
+  for (const id of App.ownedIds) {
+    const item = App.itemsDB.get(id); if (!item) continue;
+    const slot = TYPE_TO_SLOT[item.type]; if (!slot) continue;
+    perSlot[slot].owned.push(item);
+  }
+  for (const id of App.wantedIds) {
+    const item = App.itemsDB.get(id); if (!item) continue;
+    const slot = TYPE_TO_SLOT[item.type]; if (!slot) continue;
+    perSlot[slot].wanted.push(item);
+  }
+
+  let html = '';
+  for (const slot of SLOT_ORDER) {
+    const { owned, wanted } = perSlot[slot];
+    if (owned.length === 0 && wanted.length === 0 && !App.lockedSlots[slot]) continue;
+
+    const isDual  = DUAL_SLOTS.has(slot);
+    const locked  = App.lockedSlots[slot];
+    const rowCls  = locked ? 'slot-row has-lock' : 'slot-row';
+
+    html += `<div class="${rowCls}">`;
+    html += `<div class="slot-name-col${isDual ? ' dual' : ''}">`;
+    html += `${slot}${isDual ? '<br><span style="font-size:10px;color:var(--muted)">×2</span>' : ''}`;
+    html += `</div>`;
+    html += `<div class="slot-items-col">`;
+    if (owned.length === 0 && wanted.length === 0) html += `<span class="empty-slot">—</span>`;
+    for (const item of owned) {
+      const stats = itemStatStr(item);
+      html += `<div class="chip owned">`;
+      html += `<span class="chip-name" title="${esc(item.name)}">${esc(item.name)}</span>`;
+      if (stats) html += `<span class="chip-stats">${stats}</span>`;
+      html += `<span class="chip-lock" title="Lock this item to slot" onclick="lockItem(${item.id},'${slot}')">🔒</span>`;
+      html += `</div>`;
+    }
+    for (const item of wanted) {
+      const stats = itemStatStr(item);
+      html += `<div class="chip wanted">`;
+      html += `<span class="chip-name" title="${esc(item.name)} [WANTED]">${esc(item.name)}</span>`;
+      if (stats) html += `<span class="chip-stats">${stats}</span>`;
+      html += `<span class="chip-lock" title="Lock this item to slot" onclick="lockItem(${item.id},'${slot}')">🔒</span>`;
+      html += `<span class="chip-del" title="Remove from wanted" onclick="removeWanted(${item.id})">✕</span>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
+    html += `<div class="slot-lock-col">`;
+    if (locked) {
+      html += `<div class="lock-badge">`;
+      html += `<span class="lock-badge-icon">🔒</span>`;
+      html += `<span class="lock-badge-name" title="${esc(locked.name)}">${esc(locked.name)}</span>`;
+      html += `<span class="lock-badge-del" title="Unlock slot" onclick="unlockSlot('${slot}')">✕</span>`;
+      html += `</div>`;
+    } else {
+      html += `<span class="text-muted text-small" style="font-size:11px">unlocked</span>`;
+    }
+    html += `</div>`;
+    html += `</div>`;
+  }
+  grid.innerHTML = html || '<div class="empty-slot" style="padding:12px">No recognized items found (check item types in DB).</div>';
+}
+
+function lockItem(id, slot) { const item = App.itemsDB.get(id); if (!item) return; App.lockedSlots[slot] = item; renderSlots(); checkRunReady(); }
+function unlockSlot(slot)   { delete App.lockedSlots[slot]; renderSlots(); checkRunReady(); }
+function removeWanted(id) {
+  App.wantedIds.delete(id);
+  for (const [slot, item] of Object.entries(App.lockedSlots))
+    if (item && item.id === id && !App.ownedIds.has(id)) delete App.lockedSlots[slot];
+  updateAll();
+}
+
+// ═══════════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════════
+const searchInput    = document.getElementById('search-input');
+const searchDropdown = document.getElementById('search-dropdown');
+const searchResultsList = document.getElementById('search-results-list');
+let searchTimeout;
+
+searchInput.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(doSearch, 180); });
+searchInput.addEventListener('focus', () => { if (searchInput.value.trim().length >= 2) searchDropdown.classList.add('open'); });
+document.addEventListener('click', e => {
+  if (!e.target.closest('#search-input') && !e.target.closest('#search-dropdown'))
+    searchDropdown.classList.remove('open');
+});
+
+function doSearch() {
+  const q = searchInput.value.trim().toLowerCase();
+  if (q.length < 2) { searchDropdown.classList.remove('open'); return; }
+  if (App.itemsDB.size === 0) return;
+
+  const results = [];
+  for (const [id, item] of App.itemsDB) {
+    if (!item.name || !item.name.toLowerCase().includes(q)) continue;
+    const slot = TYPE_TO_SLOT[item.type]; if (!slot) continue;
+    const alreadyIn = App.ownedIds.has(id) || App.wantedIds.has(id);
+    results.push({ item, slot, alreadyIn, score: item.name.toLowerCase().startsWith(q) ? 0 : 1 });
+    if (results.length >= 60) break;
+  }
+  results.sort((a, b) => a.score - b.score || (a.item.name < b.item.name ? -1 : 1));
+
+  if (!results.length) {
+    searchResultsList.innerHTML = '<div class="search-empty">No items found</div>';
+  } else {
+    searchResultsList.innerHTML = results.map(({ item, slot, alreadyIn }) => {
+      const stats  = itemStatStr(item);
+      const addBtn = alreadyIn
+        ? `<span style="color:var(--muted);font-size:11px">${App.ownedIds.has(item.id) ? 'owned' : 'wanted'}</span>`
+        : `<span class="search-item-add" onclick="addWanted(${item.id})" title="Add to Wanted">＋</span>`;
+      return `<div class="search-item">
+        <span class="search-item-name" title="${esc(item.name)}">${esc(item.name)}</span>
+        <span class="search-item-slot">${slot}</span>
+        <span class="search-item-stats">${stats || '—'}</span>
+        ${addBtn}
+      </div>`;
+    }).join('');
+  }
+  searchDropdown.classList.add('open');
+}
+
+function addWanted(id) {
+  if (App.ownedIds.has(id)) return;
+  App.wantedIds.add(id);
+  doSearch();
+  updateAll();
+}
+
+// ═══════════════════════════════════════════════════
+// SUMMARY
+// ═══════════════════════════════════════════════════
+function renderSummary() {
+  const section = document.getElementById('setup-summary');
+  if (App.itemsDB.size === 0 && App.ownedIds.size === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  const bySlot = buildBySlot();
+  const slotCounts  = Object.entries(bySlot).map(([s, items]) => `${s}×${items.length}`).join('  ');
+  const totalItems  = Object.values(bySlot).reduce((a, v) => a + v.length, 0);
+  const cfg         = getConfig();
+  const hitCap      = (cfg.TOTAL_HIT_CAP - cfg.HIT_FROM_TALENTS_AND_BUFFS) * 100;
+  const activeBonuses = Object.keys(getActiveSetBonuses());
+
+  let html = `<div style="color:var(--muted2);line-height:2">`;
+  html += `DB: <span class="text-green">${App.itemsDB.size.toLocaleString()}</span> items &nbsp;|&nbsp; `;
+  html += `Owned: <span class="text-green">${App.ownedIds.size}</span> &nbsp;|&nbsp; `;
+  html += `Wanted: <span class="text-gold">${App.wantedIds.size}</span> &nbsp;|&nbsp; `;
+  html += `Locked slots: <span class="text-purple">${Object.keys(App.lockedSlots).length}</span><br>`;
+  html += `In optimizer: <span class="text-green">${totalItems}</span> items across <span class="text-green">${Object.keys(bySlot).length}</span> slots<br>`;
+  if (slotCounts) html += `<span style="font-size:11px">${slotCounts}</span><br>`;
+  html += `Hit required from gear: <span class="text-green">${hitCap.toFixed(1)}%</span><br>`;
+  if (activeBonuses.length) {
+    html += `Active set bonus effects: <span class="text-green">${activeBonuses.join(', ')}</span>`;
+  }
+  html += `</div>`;
+  document.getElementById('summary-content').innerHTML = html;
+}
+
+function updateBadge() { document.getElementById('badge-items').textContent = App.ownedIds.size + App.wantedIds.size; }
+
+function updateAll() { renderSlots(); renderSummary(); updateBadge(); checkRunReady(); }
+
+function checkRunReady() {
+  const btn    = document.getElementById('btn-run');
+  const status = document.getElementById('run-status');
+  const bySlot = buildBySlot();
+  const slots  = Object.keys(bySlot).length;
+  if (App.ownedIds.size === 0) { btn.disabled = true; status.textContent = 'Load owned items to enable.'; return; }
+  if (slots === 0)              { btn.disabled = true; status.textContent = 'No items matched in DB.'; return; }
+  if (App.running)              { btn.disabled = true; status.textContent = 'Optimizer running…'; return; }
+  btn.disabled = false;
+  status.textContent = `${slots} slots · ${Object.values(bySlot).reduce((a, v) => a + v.length, 0)} items · ${Object.keys(App.lockedSlots).length} locked`;
+}
+
+// ═══════════════════════════════════════════════════
+// WORKER + OPTIMIZER
+// ═══════════════════════════════════════════════════
+function getOrCreateWorker() {
+  if (App.worker) return App.worker;
+  const src  = document.getElementById('sim-worker-src').textContent;
+  const blob = new Blob([src], { type: 'application/javascript' });
+  App.worker = new Worker(URL.createObjectURL(blob));
+  return App.worker;
+}
+
+function log(msg, cls = '') {
+  const box  = document.getElementById('log-box');
+  const line = document.createElement('div');
+  line.className = 'log-line' + (cls ? ' ' + cls : '');
+  line.textContent = msg;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+document.getElementById('btn-run').addEventListener('click', runOptimizer);
+
+function runOptimizer() {
+  if (App.running) return;
+  const bySlot = buildBySlot();
+  const cfg    = getConfig();
+
+  document.getElementById('log-card').style.display = 'block';
+  document.getElementById('log-box').innerHTML = '';
+  document.getElementById('results-section').innerHTML = '';
+  document.getElementById('stat-weights-section').style.display = 'none';
+
+  App.running = true;
+  checkRunReady();
+  switchTab('run');
+
+  const worker = getOrCreateWorker();
+  worker.onmessage = function(e) {
+    const { type, msg, weights, results, message } = e.data;
+    if (type === 'log')          { log(msg); }
+    else if (type === 'statweights') { renderStatWeights(weights); }
+    else if (type === 'results') { renderResults(results, cfg); App.running = false; checkRunReady(); }
+    else if (type === 'no_results') { log('No valid gear sets found! Check hit requirement and item pool.', 'err'); App.running = false; checkRunReady(); }
+    else if (type === 'error')   { log('ERROR: ' + message, 'err'); App.running = false; checkRunReady(); }
+  };
+  worker.onerror = function(e) { log('Worker error: ' + e.message, 'err'); App.running = false; App.worker = null; checkRunReady(); };
+  worker.postMessage({ type: 'optimize', config: cfg, bySlot });
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER STAT WEIGHTS
+// ═══════════════════════════════════════════════════
+function renderStatWeights(w) {
+  const section = document.getElementById('stat-weights-section');
+  const box     = document.getElementById('stat-weights-box');
+  section.style.display = 'block';
+  box.innerHTML = `
+    <div class="sw-chip"><span class="sw-label">BASE DPS</span><br><span class="sw-val">${w.baseDPS.toFixed(2)}</span></div>
+    <div class="sw-chip"><span class="sw-label">+1 SP</span><br><span class="sw-val">+${w.perSP.toFixed(4)} DPS</span></div>
+    <div class="sw-chip"><span class="sw-label">+1% HASTE</span><br><span class="sw-val">+${w.perHaste.toFixed(4)} DPS</span></div>
+    <div class="sw-chip"><span class="sw-label">HASTE ≈ SP</span><br><span class="sw-val">${w.equiv.toFixed(1)} SP</span></div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER RESULTS
+// ═══════════════════════════════════════════════════
+function renderResults(results, cfg) {
+  const section  = document.getElementById('results-section');
+  const totalHitCap = cfg.TOTAL_HIT_CAP;
+  const hitFromTB   = cfg.HIT_FROM_TALENTS_AND_BUFFS;
+
+  let html = '';
+  for (let i = 0; i < results.length; i++) {
+    const r       = results[i];
+    const rank    = i + 1;
+    const hitTotal = r.hit + hitFromTB;
+    const hitOk   = hitTotal >= totalHitCap - 1e-9;
+
+    html += `<div class="result-set">`;
+    html += `<div class="result-header">`;
+    html += `<span class="result-rank">#${rank}</span>`;
+    html += `<span class="result-dps">${r.dps.toFixed(2)}</span><span class="result-dps-label">&nbsp;DPS</span>`;
+    html += `</div>`;
+
+    html += `<div class="result-meta">`;
+    html += `<span>SP <span class="val">${r.sp.toFixed(0)}</span></span>`;
+    html += `<span>Haste <span class="val">${(r.haste * 100).toFixed(1)}%</span></span>`;
+    html += `<span>Hit <span class="${hitOk ? 'hit-ok' : 'hit-bad'}">${(hitTotal * 100).toFixed(1)}% ${hitOk ? '✓' : '✗ under cap'}</span></span>`;
+    html += `</div>`;
+
+    html += `<table class="result-table">`;
+    for (let si = 0; si < r.slotNames.length; si++) {
+      const slot  = r.slotNames[si];
+      const combo = r.assigned[si];
+      for (const item of combo) {
+        const isWanted = App.wantedIds.has(item.id);
+        const parts = [];
+        const sp2 = iSP(item, cfg);    if (sp2) parts.push(`SP+${sp2}`);
+        const h2  = iHaste(item, cfg); if (h2)  parts.push(`Hst+${(h2 * 100).toFixed(1)}%`);
+        const t2  = iHit(item, cfg);   if (t2)  parts.push(`Hit+${(t2 * 100).toFixed(1)}%`);
+        html += `<tr>
+          <td>${slot}</td>
+          <td class="item-name-td">${esc(item.name)}</td>
+          <td class="item-stat-td">${parts.join('  ')}</td>
+          <td>${isWanted ? '<span class="wanted-mark">[W]</span>' : ''}</td>
+        </tr>`;
+      }
+    }
+    html += `</table>`;
+
+    const bd = r.breakdown;
+    const totalDmg = r.dps * cfg.SIM_DURATION;
+    const spells = Object.entries(bd).filter(([, v]) => v > 0);
+    if (spells.length) {
+      html += `<div class="breakdown-row">`;
+      for (const [k, v] of spells)
+        html += `<span>${k} <span class="spell-pct">${(100 * v / totalDmg).toFixed(0)}%</span></span>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+
+  section.innerHTML = html || `<div class="card"><p class="text-muted">No results to display.</p></div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + id));
+}
+document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+// ═══════════════════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════════════════
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+setupFileDrop('drop-owned', 'file-owned', onOwnedLoaded);
+
+window.lockItem     = lockItem;
+window.unlockSlot   = unlockSlot;
+window.removeWanted = removeWanted;
+window.addWanted    = addWanted;
+
+checkRunReady();
+autoLoadItemsDB();
+</script>
+</body>
+</html>
